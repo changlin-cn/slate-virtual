@@ -27,11 +27,13 @@ import ShadowDOM from '../../examples/shadow-dom'
 import Tables from '../../examples/tables'
 import IFrames from '../../examples/iframe'
 import CustomPlaceholder from '../../examples/custom-placeholder'
+import VirtualCursorExample from '../../examples/virtual-cursor'
 
 // node
 import { getAllExamples } from '../api'
 
 const EXAMPLES = [
+  ['VirtualCursorExample', VirtualCursorExample, 'virtual-cursor'],
   ['Checklists', CheckLists, 'check-lists'],
   ['Editable Voids', EditableVoids, 'editable-voids'],
   ['Embeds', Embeds, 'embeds'],

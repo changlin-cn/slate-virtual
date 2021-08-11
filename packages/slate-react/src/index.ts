@@ -6,6 +6,7 @@ export {
   RenderPlaceholderProps,
   DefaultPlaceholder,
 } from './components/editable'
+export { EditableVirtualCursor } from './components/editable-virtual-cursor/editable-virtual-cursor'
 export { DefaultElement } from './components/element'
 export { DefaultLeaf } from './components/leaf'
 export { Slate } from './components/slate'
