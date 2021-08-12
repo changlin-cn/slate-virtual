@@ -222,10 +222,11 @@ export const ReactEditor = {
     }
 
     return (
-      targetEl.closest(`[data-slate-editor]`) === editorEl &&
-      (!editable ||
-        targetEl.isContentEditable ||
-        !!targetEl.getAttribute('data-slate-zero-width'))
+      targetEl.closest(`[data-slate-editor]`) === editorEl
+      //  &&
+      // (!editable ||
+      //   targetEl.isContentEditable ||
+      //   !!targetEl.getAttribute('data-slate-zero-width'))
     )
   },
 
