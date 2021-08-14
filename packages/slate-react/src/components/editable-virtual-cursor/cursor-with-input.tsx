@@ -1,5 +1,11 @@
-import React, { ChangeEvent, useCallback, useEffect, useRef } from 'react'
-import { Range, Transforms, Node, Editor } from 'slate'
+import React, {
+  ChangeEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useMemo,
+} from 'react'
+import { Range, Transforms, Node, Editor, BaseRange } from 'slate'
 import { HistoryEditor } from 'slate-history'
 import getDirection from 'direction'
 
@@ -18,6 +24,13 @@ export const CursorWithInput: React.FC<{
   const { isEditorFocused } = props
   const editor = useSlate()
   const inputRef = useRef<HTMLInputElement>()
+  const state = useMemo(
+    () => ({
+      isComposing: false,
+      historyStrs: [''],
+    }),
+    []
+  )
   useEffect(() => {
     if (inputRef.current) {
       const collapsed =
@@ -30,10 +43,41 @@ export const CursorWithInput: React.FC<{
 
   const handleChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      log(`CursorWithInput handleChange`)
       const v = event.target.value
-      Transforms.insertText(editor, v)
-      event.target.value = ''
+      log(`CursorWithInput handleChange.value:${v}`)
+      if (!state.isComposing) {
+        Transforms.insertText(editor, v)
+        event.target.value = ''
+        return
+      }
+      state.historyStrs.push(v)
+      if (state.historyStrs.length === 1) {
+        Transforms.insertText(editor, v)
+        return
+      }
+      const pre = state.historyStrs[state.historyStrs.length - 2]
+      const { anchor, focus } = editor.selection as BaseRange
+      Transforms.insertText(editor, v, {
+        at: {
+          focus,
+          anchor: { path: anchor.path, offset: anchor.offset - pre.length },
+        },
+      })
+
+      // if (v.length > pre.length) {
+      //   Transforms.insertText(editor, v.substr(pre.length))
+      //   return
+      // }
+      // if (v.length < pre.length) {
+      //   log(`CursorWithInput handleChange v.length < pre.length`)
+      //   Transforms.delete(editor, {
+      //     unit: 'character',
+      //     distance: pre.length - v.length,
+      //     at: editor.selection as BaseRange,
+      //     reverse: true,
+      //   })
+
+      // }
     },
     [editor]
   )
@@ -42,7 +86,7 @@ export const CursorWithInput: React.FC<{
     (event: React.KeyboardEvent<HTMLDivElement>) => {
       log(`CursorWithInput handleKeyDown`)
 
-      if (!isEventHandled(event, props.onKeyDown)) {
+      if (!state.isComposing && !isEventHandled(event, props.onKeyDown)) {
         const { nativeEvent } = event
         const { selection } = editor
 
@@ -248,12 +292,33 @@ export const CursorWithInput: React.FC<{
     [props.onKeyDown]
   )
 
+  const handleCompositionStart = useCallback(
+    (event: React.CompositionEvent<HTMLInputElement>) => {
+      log(`CursorWithInput handleCompositionStart`)
+      state.historyStrs.length = 0
+      state.isComposing = true
+    },
+    [editor]
+  )
+
+  const handleCompositionEnd = useCallback(
+    (event: React.CompositionEvent<HTMLInputElement>) => {
+      log(`CursorWithInput handleCompositionEnd`)
+      state.isComposing = false
+      // @ts-ignore
+      event.target.value = ''
+    },
+    [editor]
+  )
+
   return (
     <VirtualCursor twinkling cursorHidden={!isEditorFocused}>
       <input
         ref={inputRef}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
+        onCompositionStart={handleCompositionStart}
+        onCompositionEnd={handleCompositionEnd}
         style={{
           width: '3em',
           opacity: 0.5,
