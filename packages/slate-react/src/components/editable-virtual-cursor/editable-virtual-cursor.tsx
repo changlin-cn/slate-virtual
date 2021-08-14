@@ -55,6 +55,7 @@ import {
   EditableProps,
 } from '../editable'
 import { CursorWithInput } from './cursor-with-input'
+import { isEventHandled } from '../../utils/is-event-handled'
 
 import { log } from '../../utils/log'
 
@@ -142,7 +143,7 @@ export const EditableVirtualCursor = (props: EditableProps) => {
       if (1) {
         const root = ReactEditor.findDocumentOrShadowRoot(editor)
         const { activeElement } = root
-        const el = ReactEditor.toDOMNode(editor, editor)
+
         const domSelection = root.getSelection()
 
         // if (activeElement === el) {
@@ -153,7 +154,17 @@ export const EditableVirtualCursor = (props: EditableProps) => {
         // }
 
         if (!domSelection) {
-          return Transforms.deselect(editor)
+          setFocused(false)
+          return
+        }
+
+        if (
+          hasTarget(editor, activeElement) &&
+          activeElement.tagName.toLowerCase() === 'input' &&
+          activeElement.hasAttribute('data-slate-virtual-cursor-input')
+        ) {
+          setFocused(true)
+          return
         }
 
         const { anchorNode, focusNode } = domSelection
@@ -225,7 +236,12 @@ export const EditableVirtualCursor = (props: EditableProps) => {
   return (
     <ReadOnlyContext.Provider value={readOnly}>
       <DecorateContext.Provider value={decorate}>
-        <div style={{ display: 'flex', position: 'relative' }}>
+        <div
+          style={{ display: 'flex', position: 'relative' }}
+          ref={ref}
+          data-slate-editor
+          data-slate-node="value"
+        >
           <Component
             // COMPAT: The Grammarly Chrome extension works by changing the DOM
             // out from under `contenteditable` elements, which leads to weird
@@ -244,9 +260,6 @@ export const EditableVirtualCursor = (props: EditableProps) => {
             autoCapitalize={
               !HAS_BEFORE_INPUT_SUPPORT ? false : attributes.autoCapitalize
             }
-            data-slate-editor
-            data-slate-node="value"
-            ref={ref}
             style={{
               // Allow positioning relative to the editable element.
               position: 'relative',
@@ -439,38 +452,4 @@ const isTargetInsideVoid = (
   const slateNode =
     hasTarget(editor, target) && ReactEditor.toSlateNode(editor, target)
   return Editor.isVoid(editor, slateNode)
-}
-
-/**
- * Check if an event is overrided by a handler.
- */
-
-const isEventHandled = <
-  EventType extends React.SyntheticEvent<unknown, unknown>
->(
-  event: EventType,
-  handler?: (event: EventType) => void
-) => {
-  if (!handler) {
-    return false
-  }
-
-  handler(event)
-  return event.isDefaultPrevented() || event.isPropagationStopped()
-}
-
-/**
- * Check if a DOM event is overrided by a handler.
- */
-
-const isDOMEventHandled = <E extends Event>(
-  event: E,
-  handler?: (event: E) => void
-) => {
-  if (!handler) {
-    return false
-  }
-
-  handler(event)
-  return event.defaultPrevented
 }

@@ -77,6 +77,8 @@ export const VirtualCursor: React.FC<{
       style={{
         position: 'absolute',
         pointerEvents: 'none',
+        margin: 0,
+        padding: 0,
       }}
     >
       <span

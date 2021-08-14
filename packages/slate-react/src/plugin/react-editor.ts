@@ -208,7 +208,7 @@ export const ReactEditor = {
     target: DOMNode,
     options: { editable?: boolean } = {}
   ): boolean {
-    const { editable = false } = options
+    // const { editable = false } = options
     const editorEl = ReactEditor.toDOMNode(editor, editor)
     let targetEl
 
