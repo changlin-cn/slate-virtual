@@ -11,6 +11,7 @@ import {
   NODE_TO_KEY,
   NODE_TO_PARENT,
   EDITOR_TO_WINDOW,
+  EDITABLE_VIRTUAL_CURSOR_SET_FOCUSED,
 } from '../utils/weak-maps'
 import {
   DOMElement,
@@ -146,6 +147,11 @@ export const ReactEditor = {
    */
 
   blur(editor: ReactEditor): void {
+    const setFocused = EDITABLE_VIRTUAL_CURSOR_SET_FOCUSED.get(editor)
+    if (setFocused) {
+      setFocused(false)
+      return
+    }
     const el = ReactEditor.toDOMNode(editor, editor)
     const root = ReactEditor.findDocumentOrShadowRoot(editor)
     IS_FOCUSED.set(editor, false)
@@ -160,6 +166,11 @@ export const ReactEditor = {
    */
 
   focus(editor: ReactEditor): void {
+    const setFocused = EDITABLE_VIRTUAL_CURSOR_SET_FOCUSED.get(editor)
+    if (setFocused) {
+      setFocused(true)
+      return
+    }
     const el = ReactEditor.toDOMNode(editor, editor)
     const root = ReactEditor.findDocumentOrShadowRoot(editor)
     IS_FOCUSED.set(editor, true)

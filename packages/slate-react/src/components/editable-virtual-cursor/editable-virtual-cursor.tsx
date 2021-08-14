@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useMemo, useCallback } from 'react'
+import React, { useEffect, useRef, useMemo, useCallback, useState } from 'react'
 import {
   Editor,
   // Element,
@@ -45,6 +45,7 @@ import {
   IS_FOCUSED,
   PLACEHOLDER_SYMBOL,
   EDITOR_TO_WINDOW,
+  EDITABLE_VIRTUAL_CURSOR_SET_FOCUSED,
 } from '../../utils/weak-maps'
 import {
   RenderElementProps,
@@ -53,6 +54,9 @@ import {
   DefaultPlaceholder,
   EditableProps,
 } from '../editable'
+import { CursorWithInput } from './cursor-with-input'
+
+import { log } from '../../utils/log'
 
 // COMPAT: Firefox/Edge Legacy don't support the `beforeinput` event
 // Chrome Legacy doesn't support `beforeinput` correctly
@@ -62,98 +66,6 @@ const HAS_BEFORE_INPUT_SUPPORT =
   globalThis.InputEvent &&
   // @ts-ignore The `getTargetRanges` property isn't recognized.
   typeof globalThis.InputEvent.prototype.getTargetRanges === 'function'
-
-function log(...arg) {
-  // console.log(...arg)
-}
-
-const VirtualCursor: React.FC<{
-  selection?: BaseRange
-  twinkling?: boolean
-}> = props => {
-  const editor = useSlate()
-  const containerRef = useRef<HTMLDivElement | null>()
-  const cursorRef = useRef<HTMLSpanElement | null>()
-  const selection = props.selection || editor.selection
-
-  useEffect(() => {
-    const rootEl = NODE_TO_ELEMENT.get(editor)
-    const window = EDITOR_TO_WINDOW.get(editor)
-    if (!selection || !window || !rootEl) {
-      return
-    }
-    const collapsed = !!selection && Range.isCollapsed(selection)
-    const rootElRect = rootEl.getBoundingClientRect()
-    const domRange = ReactEditor.toDOMRange(editor, selection)
-    log(
-      `VirtualCursor useEffect domRange.startContainer:`,
-      domRange.startContainer
-    )
-
-    const startContainerStyle = window.getComputedStyle(
-      (domRange.startContainer.nodeType === 3
-        ? domRange.startContainer.parentNode
-        : domRange.startContainer) as HTMLSpanElement
-    )
-    const domRangeRect = domRange.getBoundingClientRect()
-    const left = domRangeRect.left - rootElRect.left
-    const top = domRangeRect.top - rootElRect.top
-    if (containerRef.current && cursorRef.current) {
-      cursorRef.current.style.height = startContainerStyle.lineHeight
-
-      containerRef.current.style.left = `${left}px`
-      containerRef.current.style.top = `${top -
-        (parseInt(startContainerStyle.lineHeight, 10) -
-          parseInt(startContainerStyle.fontSize, 10)) /
-          2}px`
-
-      if (!collapsed) {
-        cursorRef.current.style.opacity = '0'
-      } else {
-        cursorRef.current.style.opacity = '1'
-      }
-    }
-  }, [editor, editor.children, selection])
-
-  useEffect(() => {
-    if (cursorRef.current && props.twinkling) {
-      let visible = true
-      const fn = () => {
-        visible = !visible
-        if (cursorRef.current) {
-          cursorRef.current.style.visibility = visible ? 'visible' : 'hidden'
-        }
-      }
-      const timmer = setInterval(fn, 500)
-      return () => clearInterval(timmer)
-    }
-  }, [props.twinkling])
-
-  return (
-    <div
-      ref={containerRef}
-      style={{
-        position: 'absolute',
-        pointerEvents: 'none',
-      }}
-    >
-      <span
-        ref={cursorRef}
-        style={{
-          display: 'inline-block',
-          width: '2px',
-          height: '22px',
-          background: 'black',
-        }}
-      />
-      {props.children}
-    </div>
-  )
-}
-
-const CursorWithInput: React.FC<{}> = props => {
-  return <VirtualCursor twinkling />
-}
 
 /**
  * EditableVirtualCursor.
@@ -179,6 +91,22 @@ export const EditableVirtualCursor = (props: EditableProps) => {
 
   // Update internal state on each render.
   IS_READ_ONLY.set(editor, readOnly)
+
+  // isFocusd
+  const [isFocused, setFocusedState] = useState<boolean>(() => {
+    IS_FOCUSED.set(editor, !!autoFocus)
+    return !!autoFocus
+  })
+
+  const setFocused = useCallback(
+    (b: boolean) => {
+      IS_FOCUSED.set(editor, b)
+      setFocusedState(b)
+    },
+    [setFocusedState, editor]
+  )
+
+  EDITABLE_VIRTUAL_CURSOR_SET_FOCUSED.set(editor, setFocused)
 
   // Keep track of some state for the event handler logic.
   const state = useMemo(
@@ -247,11 +175,13 @@ export const EditableVirtualCursor = (props: EditableProps) => {
             `EditableVirtualCursor onDOMSelectionChange Transforms.select(editor, range),range`,
             range
           )
+          setFocused(true)
         } else {
           log(
             `EditableVirtualCursor onDOMSelectionChange Transforms.deselect(editor)`
           )
-          Transforms.deselect(editor)
+          // Transforms.deselect(editor)
+          setFocused(false)
         }
       }
     }, 100),
@@ -443,7 +373,7 @@ export const EditableVirtualCursor = (props: EditableProps) => {
               selection: editor.selection,
             })}
           </Component>
-          <CursorWithInput />
+          <CursorWithInput isEditorFocused={isFocused} />
         </div>
       </DecorateContext.Provider>
     </ReadOnlyContext.Provider>

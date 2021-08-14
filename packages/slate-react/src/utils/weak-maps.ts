@@ -42,3 +42,8 @@ export const EDITOR_TO_ON_CHANGE = new WeakMap<Editor, () => void>()
  */
 
 export const PLACEHOLDER_SYMBOL = (Symbol('placeholder') as unknown) as string
+
+export const EDITABLE_VIRTUAL_CURSOR_SET_FOCUSED: WeakMap<
+  Editor,
+  (b: boolean) => void
+> = new WeakMap()
