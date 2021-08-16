@@ -16,6 +16,8 @@ import { isEventHandled } from '../../utils/is-event-handled'
 import Hotkeys from '../../utils/hotkeys'
 
 import { VirtualCursor } from './virtual-cursor'
+import { EDITOR_TO_WINDOW } from '../../utils/weak-maps'
+import { ReactEditor } from '../../plugin/react-editor'
 
 export const CursorWithInput: React.FC<{
   isEditorFocused: boolean
@@ -28,18 +30,11 @@ export const CursorWithInput: React.FC<{
     () => ({
       isComposing: false,
       historyStrs: [''],
+      isMouseDown: false,
     }),
     []
   )
-  useEffect(() => {
-    if (inputRef.current) {
-      const collapsed =
-        !!editor.selection && Range.isCollapsed(editor.selection)
-      if (collapsed && isEditorFocused) {
-        inputRef.current.focus()
-      }
-    }
-  }, [editor, editor.children, editor.selection, isEditorFocused])
+  const window = EDITOR_TO_WINDOW.get(editor)
 
   const handleChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -63,21 +58,6 @@ export const CursorWithInput: React.FC<{
           anchor: { path: anchor.path, offset: anchor.offset - pre.length },
         },
       })
-
-      // if (v.length > pre.length) {
-      //   Transforms.insertText(editor, v.substr(pre.length))
-      //   return
-      // }
-      // if (v.length < pre.length) {
-      //   log(`CursorWithInput handleChange v.length < pre.length`)
-      //   Transforms.delete(editor, {
-      //     unit: 'character',
-      //     distance: pre.length - v.length,
-      //     at: editor.selection as BaseRange,
-      //     reverse: true,
-      //   })
-
-      // }
     },
     [editor]
   )
@@ -310,6 +290,83 @@ export const CursorWithInput: React.FC<{
     },
     [editor]
   )
+
+  useEffect(() => {
+    if (window) {
+      const mdfn = () => {
+        state.isMouseDown = true
+      }
+      const mufn = () => {
+        state.isMouseDown = false
+        if (ReactEditor.isFocused(editor) && inputRef.current) {
+          inputRef.current.focus()
+        }
+      }
+      window.addEventListener('mousedown', mdfn, true)
+      window.addEventListener('mouseup', mufn, true)
+      return () => {
+        window.removeEventListener('mousedown', mdfn, true)
+        window.removeEventListener('mouseup', mufn, true)
+      }
+    }
+  }, [window, editor])
+
+  useEffect(() => {
+    if (inputRef.current) {
+      const collapsed =
+        !!editor.selection && Range.isCollapsed(editor.selection)
+      if (collapsed && isEditorFocused && !state.isMouseDown) {
+        inputRef.current.focus()
+      }
+    }
+  }, [editor, editor.children, editor.selection, isEditorFocused])
+
+  useEffect(() => {
+    if (
+      window &&
+      editor.selection &&
+      !Range.isCollapsed(editor.selection) &&
+      inputRef.current &&
+      props.isEditorFocused
+    ) {
+      const kdfn = (event: KeyboardEvent) => {
+        if (inputRef.current && event.target !== inputRef.current) {
+          // event.preventDefault()
+          // inputRef.current.focus()
+          const {
+            key,
+            code,
+            ctrlKey,
+            shiftKey,
+            metaKey,
+            altKey,
+            isComposing,
+          } = event
+          const eventNew = new KeyboardEvent('keydown', {
+            key,
+            code,
+            ctrlKey,
+            shiftKey,
+            metaKey,
+            altKey,
+            isComposing,
+            bubbles: true,
+            cancelable: true,
+            view: window,
+          })
+          setTimeout(() => {
+            inputRef.current.dispatchEvent(eventNew)
+          })
+        }
+      }
+
+      window.addEventListener('keydown', kdfn, true)
+
+      return () => {
+        window.removeEventListener('keydown', kdfn, true)
+      }
+    }
+  }, [window, editor, editor.selection, props.isEditorFocused])
 
   return (
     <VirtualCursor twinkling cursorHidden={!isEditorFocused}>
