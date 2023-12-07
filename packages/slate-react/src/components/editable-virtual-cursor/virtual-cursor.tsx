@@ -44,10 +44,7 @@ export const VirtualCursor: React.FC<{
       cursorRef.current.style.height = startContainerStyle.lineHeight
 
       containerRef.current.style.left = `${left}px`
-      containerRef.current.style.top = `${top -
-        (parseInt(startContainerStyle.lineHeight, 10) -
-          parseInt(startContainerStyle.fontSize, 10)) /
-          2}px`
+      containerRef.current.style.top = `${top}px`
 
       if (!collapsed) {
         cursorRef.current.style.opacity = '0'
@@ -79,12 +76,13 @@ export const VirtualCursor: React.FC<{
         pointerEvents: 'none',
         margin: 0,
         padding: 0,
+        display: props.cursorHidden ? 'none' : 'inline-block',
       }}
     >
       <span
         ref={cursorRef}
         style={{
-          display: props.cursorHidden ? 'none' : 'inline-block',
+          display: 'inline-block',
           width: '2px',
           height: '22px',
           background: 'black',

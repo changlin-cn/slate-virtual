@@ -11,4 +11,5 @@ module.exports = {
     })
     return config
   },
+  basePath: '/slate-virtual-cursor',
 }

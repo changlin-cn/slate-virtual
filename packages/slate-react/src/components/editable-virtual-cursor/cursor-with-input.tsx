@@ -299,7 +299,7 @@ export const CursorWithInput: React.FC<{
       const mufn = () => {
         state.isMouseDown = false
         if (ReactEditor.isFocused(editor) && inputRef.current) {
-          inputRef.current.focus()
+          // inputRef.current.focus()
         }
       }
       window.addEventListener('mousedown', mdfn, true)
@@ -331,8 +331,8 @@ export const CursorWithInput: React.FC<{
     ) {
       const kdfn = (event: KeyboardEvent) => {
         if (inputRef.current && event.target !== inputRef.current) {
-          // event.preventDefault()
-          // inputRef.current.focus()
+          event.preventDefault()
+          inputRef.current.focus()
           const {
             key,
             code,
@@ -369,7 +369,16 @@ export const CursorWithInput: React.FC<{
   }, [window, editor, editor.selection, props.isEditorFocused])
 
   return (
-    <VirtualCursor twinkling cursorHidden={!isEditorFocused}>
+    <VirtualCursor
+      twinkling
+      cursorHidden={
+        !(
+          props.isEditorFocused &&
+          editor.selection &&
+          Range.isCollapsed(editor.selection)
+        )
+      }
+    >
       <input
         ref={inputRef}
         onChange={handleChange}
