@@ -11,5 +11,5 @@ module.exports = {
     })
     return config
   },
-  basePath: '/slate-virtual-cursor',
+  basePath: '/spa/slate-virtual-cursor-demo',
 }
