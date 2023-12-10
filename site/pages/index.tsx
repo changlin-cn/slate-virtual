@@ -5,7 +5,7 @@ const Home = () => {
   const router = useRouter()
 
   useEffect(() => {
-    router.replace(`/examples`)
+    router.replace(`/examples/virtual-cursor`)
   })
 
   return null

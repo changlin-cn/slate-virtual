@@ -296,10 +296,22 @@ export const CursorWithInput: React.FC<{
       const mdfn = () => {
         state.isMouseDown = true
       }
-      const mufn = () => {
+      const mufn = (event: MouseEvent) => {
         state.isMouseDown = false
-        if (ReactEditor.isFocused(editor) && inputRef.current) {
-          // inputRef.current.focus()
+
+        const selection = window.getSelection()
+        const domRange = selection.getRangeAt(0)
+        if (domRange) {
+          try {
+            const range = ReactEditor.toSlateRange(editor, domRange, {
+              exactMatch: true,
+            })
+            if (Range.isCollapsed(range)) {
+              inputRef.current?.focus()
+            }
+          } catch (e) {
+            // do nothing
+          }
         }
       }
       window.addEventListener('mousedown', mdfn, true)
@@ -320,10 +332,8 @@ export const CursorWithInput: React.FC<{
       }
     }
   }, [editor, editor.children, editor.selection, isEditorFocused])
-
   useEffect(() => {
     if (
-      window &&
       editor.selection &&
       !Range.isCollapsed(editor.selection) &&
       inputRef.current &&
@@ -333,6 +343,7 @@ export const CursorWithInput: React.FC<{
         if (inputRef.current && event.target !== inputRef.current) {
           event.preventDefault()
           inputRef.current.focus()
+
           const {
             key,
             code,
@@ -366,7 +377,7 @@ export const CursorWithInput: React.FC<{
         window.removeEventListener('keydown', kdfn, true)
       }
     }
-  }, [window, editor, editor.selection, props.isEditorFocused])
+  }, [editor, editor.selection, props.isEditorFocused])
 
   return (
     <VirtualCursor
@@ -386,12 +397,14 @@ export const CursorWithInput: React.FC<{
         onCompositionStart={handleCompositionStart}
         onCompositionEnd={handleCompositionEnd}
         style={{
-          width: '3em',
-          opacity: 0.5,
+          width: '1px',
+          // opacity: 0.5,
           padding: 0,
           margin: 0,
           verticalAlign: 'top',
+          outline: 'none',
         }}
+        placeholder="this is input"
         data-slate-virtual-cursor-input
       />
     </VirtualCursor>

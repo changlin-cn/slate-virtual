@@ -1,4 +1,11 @@
-import React, { useEffect, useRef, useMemo, useCallback, useState } from 'react'
+import React, {
+  useEffect,
+  useRef,
+  useMemo,
+  useCallback,
+  useState,
+  useLayoutEffect,
+} from 'react'
 import { Range, BaseRange } from 'slate'
 
 import { ReactEditor } from '../..'
@@ -18,7 +25,7 @@ export const VirtualCursor: React.FC<{
   const cursorRef = useRef<HTMLSpanElement | null>()
   const selection = props.selection || editor.selection
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const rootEl = NODE_TO_ELEMENT.get(editor)
     const window = EDITOR_TO_WINDOW.get(editor)
     if (!selection || !window || !rootEl) {
@@ -76,7 +83,8 @@ export const VirtualCursor: React.FC<{
         pointerEvents: 'none',
         margin: 0,
         padding: 0,
-        display: props.cursorHidden ? 'none' : 'inline-block',
+        display: 'inline-block',
+        opacity: props.cursorHidden ? '0' : '1',
       }}
     >
       <span
