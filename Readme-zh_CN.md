@@ -1,6 +1,6 @@
 # “slate-react”改用用虚拟光标方案验证
 
-[English](./README.md) | 中文
+[English](./Readme.md) | 中文
 
 ## 方案描述：
 
