@@ -176,16 +176,14 @@ const MarkButton = ({ format, icon }) => {
 }
 
 const initialValue: Descendant[] = [
+  { type: 'paragraph', children: [{ text: '这是一个使用虚拟光标的示例：' }] },
   {
     type: 'paragraph',
     children: [
-      { text: 'This is editable ' },
-      { text: 'rich', bold: true },
-      { text: ' text, ' },
-      { text: 'much', italic: true },
-      { text: ' better than a ' },
-      { text: '<textarea>', code: true },
-      { text: '!' },
+      {
+        text:
+          '采用了一个input元素代替原contentEditable=“true”的元素来接收用户输入，避免了原编辑器内使用输入法时导致的一些问题（如果你打开开发者工具并审查元素，你会发现虚拟光标旁边有一个隐藏的input元素）；',
+      },
     ],
   },
   {
@@ -193,22 +191,54 @@ const initialValue: Descendant[] = [
     children: [
       {
         text:
-          "Since it's rich text, you can do things like turn a selection of text ",
-      },
-      { text: 'bold', bold: true },
-      {
-        text:
-          ', or add a semantically rendered block quote in the middle of the page, like this:',
+          '目前实现了鼠标点击后光标定位到某个位置然后可以（使用或不使用输入法）输入；',
       },
     ],
   },
   {
-    type: 'block-quote',
-    children: [{ text: 'A wise quote.' }],
+    type: 'paragraph',
+    children: [
+      {
+        text:
+          '但是有一个问题，鼠标选中一段文本后，如果input元素获取焦点，则选中文本的“拖蓝”样式会丢失，但是input元素不获取焦点，用户在使用输入法输入时就会丢失“拖蓝”后第一次敲击键盘输入内容，当然，此问题可以解决，就是给选中的文本手动加上“拖蓝”的效果（只是有一定的性能损耗）；',
+      },
+    ],
   },
   {
     type: 'paragraph',
-    children: [{ text: 'Try it out for yourself!' }],
+    children: [{ text: '由于有更好的方案，此方案目前停止继续开发；' }],
+  },
+  { type: 'paragraph', children: [{ text: '' }] },
+  {
+    type: 'paragraph',
+    children: [{ text: 'This is an example of using a virtual cursor: ' }],
+  },
+  {
+    type: 'paragraph',
+    children: [
+      {
+        text:
+          ' An input element is used instead of the original contentEditable="true" element to receive user input, avoiding some problems caused by using input methods in the original editor(If you open the developer tools and inspect the elements, you will find a hidden input element next to the virtual cursor).  ',
+      },
+    ],
+  },
+  {
+    type: 'paragraph',
+    children: [
+      {
+        text:
+          'Currently, the cursor can be positioned to a certain location after clicking the mouse, and input can be entered with or without an input method.  However, there is a problem: if the mouse selects a piece of text and the input element gains focus, the "drag blue" style of the selected text will be lost. However, if the input element does not gain focus, users will lose the "drag blue" effect after the first keystroke when using an input method to enter text. Of course, this problem can be solved by manually adding the "drag blue" effect to the selected text (with some performance loss).  ',
+      },
+    ],
+  },
+  {
+    type: 'paragraph',
+    children: [
+      {
+        text:
+          'Due to a better solution, this solution has stopped further development.',
+      },
+    ],
   },
 ]
 

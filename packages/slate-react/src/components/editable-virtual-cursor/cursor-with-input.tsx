@@ -334,6 +334,7 @@ export const CursorWithInput: React.FC<{
   }, [editor, editor.children, editor.selection, isEditorFocused])
   useEffect(() => {
     if (
+      window &&
       editor.selection &&
       !Range.isCollapsed(editor.selection) &&
       inputRef.current &&
@@ -398,7 +399,7 @@ export const CursorWithInput: React.FC<{
         onCompositionEnd={handleCompositionEnd}
         style={{
           width: '1px',
-          // opacity: 0.5,
+          opacity: 0,
           padding: 0,
           margin: 0,
           verticalAlign: 'top',

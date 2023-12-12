@@ -216,6 +216,15 @@ export const EditableVirtualCursor = (props: EditableProps) => {
     }
   }, [onDOMSelectionChange])
 
+  useIsomorphicLayoutEffect(() => {
+    if (autoFocus) {
+      Transforms.select(editor, {
+        anchor: { path: [0, 0], offset: 0 },
+        focus: { path: [0, 0], offset: 0 },
+      })
+    }
+  }, [])
+
   const decorations = decorate([editor, []])
 
   if (
