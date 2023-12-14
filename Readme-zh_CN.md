@@ -18,6 +18,9 @@
 
 由于出现了更好的解决方案，目前这个方案已经停止继续开发。
 
+## 在线示例
+[点击查看](https://lin150.fun/spa/slate-virtual-cursor-demo/examples/virtual-cursor)
+
 ## 相关代码
 
 [code](https://github.com/changlin-cn/slate-virtual/tree/virtual-cursor/packages/slate-react/src/components/editable-virtual-cursor)
