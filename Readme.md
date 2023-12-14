@@ -1,4 +1,4 @@
-# Uses virtual cursor scheme for verification instead in "slate-react""
+# Add virtual caret in "slate-react"
 
 English | [中文](./Readme-zh_CN.md)
 
