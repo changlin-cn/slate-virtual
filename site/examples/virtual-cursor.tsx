@@ -29,6 +29,11 @@ const RichTextExample = () => {
 
   return (
     <Slate editor={editor} value={value} onChange={value => setValue(value)}>
+      <p>
+        <a href="https://github.com/changlin-cn/slate-virtual/tree/virtual-cursor">
+          源代码/github
+        </a>
+      </p>
       <Toolbar>
         <MarkButton format="bold" icon="format_bold" />
         <MarkButton format="italic" icon="format_italic" />
