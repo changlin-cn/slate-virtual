@@ -39,8 +39,7 @@ Instead of using elements with contentEditable='true' to capture user input, we 
 
 ## Progress
 
-- [ ] Add a new "NonEditable" component;
-- [ ] Remove unnecessary code from the "NoEditable" component (according to the new solution);
+- [ ] Add a new "NonEditable" component and remove unnecessary code from the "NoEditable" component (according to the new solution);
 - [ ] Add a VirtualCaret component;
 - [ ] Add a VirtualInput component to accept user input;
 - [ ] Implement vertical movement of the "virtual cursor";
