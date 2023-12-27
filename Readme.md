@@ -40,8 +40,7 @@
 
 ## 进度
 
-- [ ] 添加新的“NonEditable”组件；
-- [ ] “NoEditable”组件去掉一些无用（新方案中）代码；
+- [ ] 添加新的“NonEditable”组件，“NoEditable”组件去掉一些无用（新方案中）代码；
 - [ ] 添加虚拟光标组件（VirtualCaret）；
 - [ ] 添加VirtualInput组件，接受用户输入；
 - [ ] “虚拟光标”上下移动；
