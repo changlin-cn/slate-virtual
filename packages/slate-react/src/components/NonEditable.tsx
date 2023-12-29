@@ -150,16 +150,6 @@ export const NonEditable = (props: EditableProps) => {
     }
   }, [autoFocus])
 
-  /**
-   * The AndroidInputManager object has a cyclical dependency on onDOMSelectionChange
-   *
-   * It is defined as a reference to simplify hook dependencies and clarify that
-   * it needs to be initialized.
-   */
-  const androidInputManagerRef = useRef<
-    AndroidInputManager | null | undefined
-  >()
-
   // Listen on the native `selectionchange` event to be able to update any time
   // the selection changes. This is required because React's `onSelect` is leaky
   // and non-standard so it doesn't fire until after a selection has been
@@ -168,10 +158,9 @@ export const NonEditable = (props: EditableProps) => {
   const onDOMSelectionChange = useMemo(
     () =>
       throttle(() => {
-        const androidInputManager = androidInputManagerRef.current
         if (
           (IS_ANDROID || !ReactEditor.isComposing(editor)) &&
-          (!state.isUpdatingSelection || androidInputManager?.isFlushing()) &&
+          !state.isUpdatingSelection &&
           !state.isDraggingInternally
         ) {
           const root = ReactEditor.findDocumentOrShadowRoot(editor)
@@ -209,14 +198,8 @@ export const NonEditable = (props: EditableProps) => {
             })
 
             if (range) {
-              if (
-                !ReactEditor.isComposing(editor) &&
-                !androidInputManager?.hasPendingChanges() &&
-                !androidInputManager?.isFlushing()
-              ) {
+              if (!ReactEditor.isComposing(editor)) {
                 Transforms.select(editor, range)
-              } else {
-                androidInputManager?.handleUserSelect(range)
               }
             }
           }
@@ -235,12 +218,6 @@ export const NonEditable = (props: EditableProps) => {
     [onDOMSelectionChange]
   )
 
-  androidInputManagerRef.current = useAndroidInputManager({
-    node: ref,
-    onDOMSelectionChange,
-    scheduleOnDOMSelectionChange,
-  })
-
   useIsomorphicLayoutEffect(() => {
     // Update element-related weak maps with the DOM element ref.
     let window
@@ -258,11 +235,7 @@ export const NonEditable = (props: EditableProps) => {
     const root = ReactEditor.findDocumentOrShadowRoot(editor)
     const domSelection = root.getSelection()
 
-    if (
-      !domSelection ||
-      !ReactEditor.isFocused(editor) ||
-      androidInputManagerRef.current?.hasPendingAction()
-    ) {
+    if (!domSelection || !ReactEditor.isFocused(editor)) {
       return
     }
 
@@ -385,48 +358,16 @@ export const NonEditable = (props: EditableProps) => {
       setDomSelection()
     }
 
-    const ensureSelection =
-      androidInputManagerRef.current?.isFlushing() === 'action'
-
-    if (!IS_ANDROID || !ensureSelection) {
+    if (!IS_ANDROID) {
       setTimeout(() => {
         state.isUpdatingSelection = false
       })
       return
     }
 
-    let timeoutId: ReturnType<typeof setTimeout> | null = null
-    const animationFrameId = requestAnimationFrame(() => {
-      if (ensureSelection) {
-        const ensureDomSelection = (forceChange?: boolean) => {
-          try {
-            const el = ReactEditor.toDOMNode(editor, editor)
-            el.focus()
-
-            setDomSelection(forceChange)
-          } catch (e) {
-            // Ignore, dom and state might be out of sync
-          }
-        }
-
-        // Compat: Android IMEs try to force their selection by manually re-applying it even after we set it.
-        // This essentially would make setting the slate selection during an update meaningless, so we force it
-        // again here. We can't only do it in the setTimeout after the animation frame since that would cause a
-        // visible flicker.
-        ensureDomSelection()
-
-        timeoutId = setTimeout(() => {
-          // COMPAT: While setting the selection in an animation frame visually correctly sets the selection,
-          // it doesn't update GBoards spellchecker state. We have to manually trigger a selection change after
-          // the animation frame to ensure it displays the correct state.
-          ensureDomSelection(true)
-          state.isUpdatingSelection = false
-        })
-      }
-    })
+    const timeoutId: ReturnType<typeof setTimeout> | null = null
 
     return () => {
-      cancelAnimationFrame(animationFrameId)
       if (timeoutId) {
         clearTimeout(timeoutId)
       }
