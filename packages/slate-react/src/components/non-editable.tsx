@@ -33,23 +33,16 @@ import { TRIPLE_CLICK } from '../utils/constants'
 import {
   DOMElement,
   DOMRange,
-  DOMText,
   getDefaultView,
   isDOMElement,
   isDOMNode,
-  isPlainTextOnlyPaste,
 } from '../utils/dom'
 import {
   CAN_USE_DOM,
   HAS_BEFORE_INPUT_SUPPORT,
   IS_ANDROID,
-  IS_CHROME,
   IS_FIREFOX,
-  IS_FIREFOX_LEGACY,
-  IS_IOS,
   IS_WEBKIT,
-  IS_UC_MOBILE,
-  IS_WECHATBROWSER,
 } from '../utils/environment'
 import Hotkeys from '../utils/hotkeys'
 import {
@@ -77,6 +70,9 @@ import {
   isDOMEventTargetInput,
   isEventHandled,
 } from './editable'
+import { VirtualCaret } from './virtual-caret'
+import { VirtualInput } from './virtual-input'
+import { IFrame } from './iframe'
 
 type DeferredOperation = () => void
 
@@ -90,11 +86,7 @@ const Children = (props: Parameters<typeof useChildren>[0]) => (
 
 export type NonEditableProps = EditableProps
 
-/**
- * NonEditable.
- */
-
-export const NonEditable = (props: EditableProps) => {
+const NonEditableInner = (props: EditableProps) => {
   const defaultRenderPlaceholder = useCallback(
     (props: RenderPlaceholderProps) => <DefaultPlaceholder {...props} />,
     []
@@ -524,14 +516,11 @@ export const NonEditable = (props: EditableProps) => {
             // then you will select the whole text node when you select part the of text
             // this magic zIndex="-1" will fix it
             zindex={-1}
-            tabIndex="0"
             ref={callbackRef}
             style={{
               ...(disableDefaultStyles
                 ? {}
                 : {
-                    // Allow positioning relative to the editable element.
-                    position: 'relative',
                     // Preserve adjacent whitespace and new lines.
                     whiteSpace: 'pre-wrap',
                     // Allow words to break if they are too long.
@@ -543,6 +532,8 @@ export const NonEditable = (props: EditableProps) => {
                   }),
               // Allow for passed-in styles to override anything.
               ...userStyle,
+              //  It is used to position the cursor or other elements.
+              position: 'relative',
             }}
             onBlur={useCallback(
               (event: React.FocusEvent<HTMLDivElement>) => {
@@ -860,14 +851,16 @@ export const NonEditable = (props: EditableProps) => {
               [readOnly, state, editor, attributes.onFocus]
             )}
           >
-            <Children
-              decorations={decorations}
-              node={editor}
-              renderElement={renderElement}
-              renderPlaceholder={renderPlaceholder}
-              renderLeaf={renderLeaf}
-              selection={editor.selection}
-            />
+            <Component>
+              <Children
+                decorations={decorations}
+                node={editor}
+                renderElement={renderElement}
+                renderPlaceholder={renderPlaceholder}
+                renderLeaf={renderLeaf}
+                selection={editor.selection}
+              />
+            </Component>
           </Component>
         </RestoreDOM>
       </DecorateContext.Provider>
@@ -875,6 +868,27 @@ export const NonEditable = (props: EditableProps) => {
   )
 }
 
+/**
+ * NonEditable.
+ */
+export const NonEditable = (props: EditableProps) => {
+  const { as: Component = 'div', autoFocus } = props
+  const editor = useSlate()
+
+  const [isFocused, setFocusedState] = useState<boolean>(() => {
+    IS_FOCUSED.set(editor, !!autoFocus)
+    return !!autoFocus
+  })
+
+  return (
+    <Component data-editor-popup-container style={{ position: 'relative' }}>
+      <IFrame>
+        <NonEditableInner {...props} />
+      </IFrame>
+      <VirtualInput isEditorFocused={isFocused} />
+    </Component>
+  )
+}
 /**
  * A default implement to scroll dom range into view.
  */

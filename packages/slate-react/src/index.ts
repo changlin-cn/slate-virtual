@@ -1,7 +1,7 @@
 import {
   NonEditable as Editable,
   NonEditableProps,
-} from './components/NonEditable'
+} from './components/non-editable'
 
 export { Editable, NonEditableProps }
 // Components
