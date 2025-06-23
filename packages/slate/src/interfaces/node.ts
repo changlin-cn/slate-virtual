@@ -32,6 +32,10 @@ export interface NodeElementsOptions {
   pass?: (node: NodeEntry) => boolean
 }
 
+export interface NodeIsNodeOptions {
+  deep?: boolean
+}
+
 export interface NodeLevelsOptions {
   reverse?: boolean
 }
@@ -116,7 +120,7 @@ export interface NodeInterface {
   extractProps: (node: Node) => NodeProps
 
   /**
-   * Get the first node entry in a root node from a path.
+   * Get the first leaf node entry in a root node from a path.
    */
   first: (root: Node, path: Path) => NodeEntry
 
@@ -132,6 +136,11 @@ export interface NodeInterface {
   get: (root: Node, path: Path) => Node
 
   /**
+   * Similar to get, but returns undefined if the node does not exist.
+   */
+  getIf: (root: Node, path: Path) => Node | undefined
+
+  /**
    * Check if a descendant node exists at a specific path.
    */
   has: (root: Node, path: Path) => boolean
@@ -139,15 +148,15 @@ export interface NodeInterface {
   /**
    * Check if a value implements the `Node` interface.
    */
-  isNode: (value: any) => value is Node
+  isNode: (value: any, options?: NodeIsNodeOptions) => value is Node
 
   /**
    * Check if a value is a list of `Node` objects.
    */
-  isNodeList: (value: any) => value is Node[]
+  isNodeList: (value: any, options?: NodeIsNodeOptions) => value is Node[]
 
   /**
-   * Get the last node entry in a root node from a path.
+   * Get the last leaf node entry in a root node from a path.
    */
   last: (root: Node, path: Path) => NodeEntry
 
@@ -205,8 +214,6 @@ export interface NodeInterface {
     options?: NodeTextsOptions
   ) => Generator<NodeEntry<Text>, void, undefined>
 }
-
-const IS_NODE_LIST_CACHE = new WeakMap<any[], boolean>()
 
 // eslint-disable-next-line no-redeclare
 export const Node: NodeInterface = {
@@ -389,17 +396,25 @@ export const Node: NodeInterface = {
   },
 
   get(root: Node, path: Path): Node {
+    const node = Node.getIf(root, path)
+    if (node === undefined) {
+      throw new Error(
+        `Cannot find a descendant at path [${path}] in node: ${Scrubber.stringify(
+          root
+        )}`
+      )
+    }
+    return node
+  },
+
+  getIf(root: Node, path: Path): Node | undefined {
     let node = root
 
     for (let i = 0; i < path.length; i++) {
       const p = path[i]
 
       if (Text.isText(node) || !node.children[p]) {
-        throw new Error(
-          `Cannot find a descendant at path [${path}] in node: ${Scrubber.stringify(
-            root
-          )}`
-        )
+        return
       }
 
       node = node.children[p]
@@ -424,23 +439,21 @@ export const Node: NodeInterface = {
     return true
   },
 
-  isNode(value: any): value is Node {
+  isNode(value: any, { deep = false }: NodeIsNodeOptions = {}): value is Node {
     return (
-      Text.isText(value) || Element.isElement(value) || Editor.isEditor(value)
+      Text.isText(value) ||
+      Element.isElement(value, { deep }) ||
+      Editor.isEditor(value, { deep })
     )
   },
 
-  isNodeList(value: any): value is Node[] {
-    if (!Array.isArray(value)) {
-      return false
-    }
-    const cachedResult = IS_NODE_LIST_CACHE.get(value)
-    if (cachedResult !== undefined) {
-      return cachedResult
-    }
-    const isNodeList = value.every(val => Node.isNode(val))
-    IS_NODE_LIST_CACHE.set(value, isNodeList)
-    return isNodeList
+  isNodeList(
+    value: any,
+    { deep = false }: NodeIsNodeOptions = {}
+  ): value is Node[] {
+    return (
+      Array.isArray(value) && value.every(val => Node.isNode(val, { deep }))
+    )
   },
 
   last(root: Node, path: Path): NodeEntry {

@@ -1,48 +1,58 @@
 import getDirection from 'direction'
 import React, { useCallback } from 'react'
 import { JSX } from 'react'
-import { Editor, Element as SlateElement, Node, Range } from 'slate'
+import { Editor, Element as SlateElement, Node, DecoratedRange } from 'slate'
 import { ReactEditor, useReadOnly, useSlateStatic } from '..'
 import useChildren from '../hooks/use-children'
-import { isElementDecorationsEqual } from '../utils/range-list'
+import { isElementDecorationsEqual } from 'slate-dom'
 import {
   EDITOR_TO_KEY_TO_ELEMENT,
   ELEMENT_TO_NODE,
   NODE_TO_ELEMENT,
   NODE_TO_INDEX,
   NODE_TO_PARENT,
-} from '../utils/weak-maps'
+} from 'slate-dom'
 import {
+  RenderChunkProps,
   RenderElementProps,
   RenderLeafProps,
   RenderPlaceholderProps,
+  RenderTextProps,
 } from './editable'
 
 import Text from './text'
+import { useDecorations } from '../hooks/use-decorations'
+
+const defaultRenderElement = (props: RenderElementProps) => (
+  <DefaultElement {...props} />
+)
 
 /**
  * Element.
  */
 
 const Element = (props: {
-  decorations: Range[]
+  decorations: DecoratedRange[]
   element: SlateElement
   renderElement?: (props: RenderElementProps) => JSX.Element
+  renderChunk?: (props: RenderChunkProps) => JSX.Element
   renderPlaceholder: (props: RenderPlaceholderProps) => JSX.Element
+  renderText?: (props: RenderTextProps) => JSX.Element
   renderLeaf?: (props: RenderLeafProps) => JSX.Element
-  selection: Range | null
 }) => {
   const {
-    decorations,
+    decorations: parentDecorations,
     element,
-    renderElement = (p: RenderElementProps) => <DefaultElement {...p} />,
+    renderElement = defaultRenderElement,
+    renderChunk,
     renderPlaceholder,
     renderLeaf,
-    selection,
+    renderText,
   } = props
   const editor = useSlateStatic()
   const readOnly = useReadOnly()
   const isInline = editor.isInline(element)
+  const decorations = useDecorations(element, parentDecorations)
   const key = ReactEditor.findKey(editor, element)
   const ref = useCallback(
     (ref: HTMLElement | null) => {
@@ -63,9 +73,10 @@ const Element = (props: {
     decorations,
     node: element,
     renderElement,
+    renderChunk,
     renderPlaceholder,
     renderLeaf,
-    selection,
+    renderText,
   })
 
   // Attributes that the developer must mix into the element in their
@@ -139,13 +150,11 @@ const MemoizedElement = React.memo(Element, (prev, next) => {
   return (
     prev.element === next.element &&
     prev.renderElement === next.renderElement &&
+    prev.renderChunk === next.renderChunk &&
+    prev.renderText === next.renderText &&
     prev.renderLeaf === next.renderLeaf &&
     prev.renderPlaceholder === next.renderPlaceholder &&
-    isElementDecorationsEqual(prev.decorations, next.decorations) &&
-    (prev.selection === next.selection ||
-      (!!prev.selection &&
-        !!next.selection &&
-        Range.equals(prev.selection, next.selection)))
+    isElementDecorationsEqual(prev.decorations, next.decorations)
   )
 })
 

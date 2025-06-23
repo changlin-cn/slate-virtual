@@ -1,5 +1,190 @@
 # slate-react
 
+## 0.117.1
+
+### Patch Changes
+
+- [#5902](https://github.com/ianstormtaylor/slate/pull/5902) [`47da9bf4`](https://github.com/ianstormtaylor/slate/commit/47da9bf45599c81359cb6bc86aa59d01c77bba52) Thanks [@zbeyens](https://github.com/zbeyens)! - Fixes #5900
+
+## 0.116.0
+
+### Minor Changes
+
+- [#5871](https://github.com/ianstormtaylor/slate/pull/5871) [`fb87646e`](https://github.com/ianstormtaylor/slate/commit/fb87646e8643e1d0547134cea9d1f57912f06a92) Thanks [@12joan](https://github.com/12joan)! - - Implement experimental chunking optimization (disabled by default, see https://docs.slatejs.org/walkthroughs/09-performance).
+  - Add `useElement` and `useElementIf` hooks to get the current element.
+  - **BREAKING CHANGE:** Decorations are no longer recomputed when a node's parent re-renders, only when the node itself re-renders or when the `decorate` function is changed.
+    - Ensure that `decorate` is a pure function of the node passed into it. Depending on the node's parent may result in decorations not being recomputed when you expect them to be.
+    - If this change impacts you, consider changing your `decorate` function to work on the node's parent instead.
+    - For example, if your `decorate` function decorates a `code-line` based on the parent `code-block`'s language, decorate the `code-block` instead.
+    - This is unlikely to result in any performance detriment, since in previous versions of `slate-react`, the decorations of all siblings were recomputed when one sibling was modified.
+  - **BREAKING CHANGE:** Elements no longer re-render due to selection changes.
+    - To re-render whenever an element becomes selected or deselected, subscribe to `useSelected`.
+    - To re-render whenever the selection changes anywhere in the editor, subscribe to `useSlateSelection`.
+    - To re-render whenever the intersection of the selection with an element changes (the previous behaviour), use `useSlateSelector` to compute this intersection using `Range.intersection`. Ensure you provide a suitable equality function using `Range.equals`.
+  - Increase minimum `slate-dom` version to `0.116.0`.
+  - Deprecate the `useSlateWithV` hook
+  - PERF: Use subscribable pattern for `useSlate`, `useSelected` and decorations to reduce re-renders.
+
+## 0.115.0
+
+### Patch Changes
+
+- [#5881](https://github.com/ianstormtaylor/slate/pull/5881) [`05263b54`](https://github.com/ianstormtaylor/slate/commit/05263b544c32b4c704d141dc5142190f18c056e1) Thanks [@12joan](https://github.com/12joan)! - Fix IME issues in Firefox caused by placeholder
+
+- [#5877](https://github.com/ianstormtaylor/slate/pull/5877) [`747ebfda`](https://github.com/ianstormtaylor/slate/commit/747ebfda0a06b29fc31720f9172c67222fbeae07) Thanks [@12joan](https://github.com/12joan)! - Fix a crash on iOS when composing text using an IME at the start of a block, at the cost of breaking capitalization on iOS in an empty editor.
+
+- [#5859](https://github.com/ianstormtaylor/slate/pull/5859) [`72532fd2`](https://github.com/ianstormtaylor/slate/commit/72532fd2d7be594251ea26fefb5c1ce8337b76ed) Thanks [@12joan](https://github.com/12joan)! - Optimize `isElement`, `isText`, `isNodeList` and `isEditor` by removing dependency on `is-plain-object` and by performing shallow checks by default. To perform a full check, including all descendants, pass the `{ deep: true }` option to `isElement`, `isNodeList` or `isEditor`.
+
+## 0.114.2
+
+### Patch Changes
+
+- [#5855](https://github.com/ianstormtaylor/slate/pull/5855) [`ec367fb0`](https://github.com/ianstormtaylor/slate/commit/ec367fb04f018c8fd0daf8b0d09f87c89a8c155b) Thanks [@zbeyens](https://github.com/zbeyens)! - Fix `renderText` prop not applied
+
+## 0.114.1
+
+### Patch Changes
+
+- [#5853](https://github.com/ianstormtaylor/slate/pull/5853) [`9fe6184c`](https://github.com/ianstormtaylor/slate/commit/9fe6184ca26c518a1114b66df319504f31a07cbb) Thanks [@12joan](https://github.com/12joan)! - Increase minimum `slate` version to 0.114.0 due to https://github.com/ianstormtaylor/slate/issues/5852
+
+## 0.114.0
+
+### Minor Changes
+
+- [#5850](https://github.com/ianstormtaylor/slate/pull/5850) [`22a3dda3`](https://github.com/ianstormtaylor/slate/commit/22a3dda36d4362d5dfdb9a75836297dae8cd7f9e) Thanks [@zbeyens](https://github.com/zbeyens)! - - Update `RenderLeafProps` interface to add `leafPosition` property containing `start`, `end`, `isFirst`, and `isLast` when a text node is split by decorations.
+
+  - Add optional `renderText` prop to `<Editable />` component for customizing text node rendering.
+
+- [#5848](https://github.com/ianstormtaylor/slate/pull/5848) [`2c62e017`](https://github.com/ianstormtaylor/slate/commit/2c62e0179734871369ac23d38ebfc1378ec9ad68) Thanks [@dpolugic](https://github.com/dpolugic)! - Use equalityFn in useSlateSelector during render as well
+
+## 0.113.0
+
+### Patch Changes
+
+- [#5822](https://github.com/ianstormtaylor/slate/pull/5822) [`68915e8c`](https://github.com/ianstormtaylor/slate/commit/68915e8cfadd9d8dd545dbcd8c33b6b69827a287) Thanks [@RavenColEvol](https://github.com/RavenColEvol)! - add context menu undo support
+
+## 0.112.1
+
+### Patch Changes
+
+- [#5795](https://github.com/ianstormtaylor/slate/pull/5795) [`f456dfbf`](https://github.com/ianstormtaylor/slate/commit/f456dfbf133f93fabe683849adb7952b8b04fc60) Thanks [@12joan](https://github.com/12joan)! - Ignore selectionchange events originating from input and textarea elements (addresses Chrome bug https://issues.chromium.org/issues/389368412)
+
+## 0.112.0
+
+### Patch Changes
+
+- [#5763](https://github.com/ianstormtaylor/slate/pull/5763) [`644ebdc8`](https://github.com/ianstormtaylor/slate/commit/644ebdc8f5f30878fb87dc8685f62e0636c23491) Thanks [@TyMick](https://github.com/TyMick)! - Use extended `Editor` type in `useSlateWithV` return type
+
+- [#5741](https://github.com/ianstormtaylor/slate/pull/5741) [`90fbcdef`](https://github.com/ianstormtaylor/slate/commit/90fbcdeff58d9b1f5de13102a1198f1c7244ae0c) Thanks [@AdrienPoupa](https://github.com/AdrienPoupa)! - Fix ReactEditor.toDOMRange crash in setDomSelection
+
+## 0.111.0
+
+### Minor Changes
+
+- [#5734](https://github.com/ianstormtaylor/slate/pull/5734) [`9a212512`](https://github.com/ianstormtaylor/slate/commit/9a2125127064f35332d5c06df2dfa3768f745185) Thanks [@bmingles](https://github.com/bmingles)! - Split out slate-dom package
+
+## 0.110.3
+
+### Patch Changes
+
+- [#5746](https://github.com/ianstormtaylor/slate/pull/5746) [`e97a9f88`](https://github.com/ianstormtaylor/slate/commit/e97a9f8857b24d57c1386b2d01e9922360f98599) Thanks [@DustinMackintosh](https://github.com/DustinMackintosh)! - Invalidate node maps when nodes change until next react paint
+
+## 0.110.2
+
+### Patch Changes
+
+- [#5737](https://github.com/ianstormtaylor/slate/pull/5737) [`cd21bb1f`](https://github.com/ianstormtaylor/slate/commit/cd21bb1f80cfaa824253849b407781c9471dcd9a) Thanks [@WindRunnerMax](https://github.com/WindRunnerMax)! - fix: sync built-in state on undo when editor is unfocused
+
+- [#5727](https://github.com/ianstormtaylor/slate/pull/5727) [`335c5418`](https://github.com/ianstormtaylor/slate/commit/335c54188ff1e2985cc584dd9fa3117508208dd3) Thanks [@hernansartorio](https://github.com/hernansartorio)! - Call unref on pathRefs created for move_node to remove memory leak
+
+## 0.110.1
+
+### Patch Changes
+
+- [#5716](https://github.com/ianstormtaylor/slate/pull/5716) [`10abeff8`](https://github.com/ianstormtaylor/slate/commit/10abeff84fd856f9fd72240f8ee1631466f98d02) Thanks [@TyMick](https://github.com/TyMick)! - Fix selections with non-void non-editable focus
+
+## 0.110.0
+
+### Minor Changes
+
+- [#5706](https://github.com/ianstormtaylor/slate/pull/5706) [`f9e83b80`](https://github.com/ianstormtaylor/slate/commit/f9e83b807f4b2ae717814af5943f53f366a48fd2) Thanks [@yf-yang](https://github.com/yf-yang)! - Expose useComposing hook
+
+## 0.109.0
+
+### Minor Changes
+
+- [#5695](https://github.com/ianstormtaylor/slate/pull/5695) [`6cb38e37`](https://github.com/ianstormtaylor/slate/commit/6cb38e37a4bd3a43ee02652c514288df62da1c21) Thanks [@yf-yang](https://github.com/yf-yang)! - feat: Add useComposing hook"
+
+## 0.108.0
+
+### Minor Changes
+
+- [#5681](https://github.com/ianstormtaylor/slate/pull/5681) [`b8bf92dc`](https://github.com/ianstormtaylor/slate/commit/b8bf92dc7e42f7547128fcfe1c63e89dffb29032) Thanks [@yf-yang](https://github.com/yf-yang)! - Forward ref from Editable component
+
+## 0.107.1
+
+### Patch Changes
+
+- [#5677](https://github.com/ianstormtaylor/slate/pull/5677) [`a9a70405`](https://github.com/ianstormtaylor/slate/commit/a9a7040583ffe6a5ddf623acbaa91dee8fc76904) Thanks [@WindrunnerMax](https://github.com/WindrunnerMax)! - fix unexpected event triggered when using `ReactEditor.focus`
+
+## 0.107.0
+
+### Minor Changes
+
+- [#5676](https://github.com/ianstormtaylor/slate/pull/5676) [`ec9e5f0a`](https://github.com/ianstormtaylor/slate/commit/ec9e5f0a366dda80f826e90042ff8a49b1cf3933) Thanks [@ivan-sysoi](https://github.com/ivan-sysoi)! - Changed behaviour of ReactEditor.findDocumentOrShadowRoot. It returns shadow root or document without checking for the existence of the getSelection method.
+
+## 0.106.0
+
+### Minor Changes
+
+- [#5659](https://github.com/ianstormtaylor/slate/pull/5659) [`e6254f70`](https://github.com/ianstormtaylor/slate/commit/e6254f706a47d0e451d3d40485bf96f819eaa9ab) Thanks [@MahmoudElsayad](https://github.com/MahmoudElsayad)! - Enable Shadow DOM fix for all Safari versions.
+
+### Patch Changes
+
+- [#5664](https://github.com/ianstormtaylor/slate/pull/5664) [`0016f984`](https://github.com/ianstormtaylor/slate/commit/0016f9843f76fee1fe7d26330dd00cd1307915ec) Thanks [@12joan](https://github.com/12joan)! - Fix: `state.isDraggingInternally` is stale if a drop handler outside the editor causes the dragged DOM element to unmount
+
+## 0.105.0
+
+### Minor Changes
+
+- [#5654](https://github.com/ianstormtaylor/slate/pull/5654) [`2a8b4e95`](https://github.com/ianstormtaylor/slate/commit/2a8b4e958bd02f3b70da51c3880fd764270424ad) Thanks [@alex-starostin](https://github.com/alex-starostin)! - Make capitalizing work for iOS
+
+## 0.104.0
+
+### Minor Changes
+
+- [#5648](https://github.com/ianstormtaylor/slate/pull/5648) [`0bb7be54`](https://github.com/ianstormtaylor/slate/commit/0bb7be5496db4c31042667a17f9ff95c3f3d42b0) Thanks [@MahmoudElsayad](https://github.com/MahmoudElsayad)! - Fix Safari selection inside Shadow DOM.
+
+## 0.102.0
+
+### Patch Changes
+
+- [#5541](https://github.com/ianstormtaylor/slate/pull/5541) [`c2ae1eda`](https://github.com/ianstormtaylor/slate/commit/c2ae1eda91d0aae1cd63bd46af759c542c292a8a) Thanks [@12joan](https://github.com/12joan)! - Do not move selection outside inline node when composition starts
+
+## 0.101.6
+
+### Patch Changes
+
+- [#5593](https://github.com/ianstormtaylor/slate/pull/5593) [`54594d0f`](https://github.com/ianstormtaylor/slate/commit/54594d0f81627166d72c97256203c4b5642a82ff) Thanks [@12joan](https://github.com/12joan)! - Fix: Calling `ReactEditor.focus` doesn't update `useFocused` when running in @testing-library/react
+
+## 0.101.5
+
+### Patch Changes
+
+- [#5584](https://github.com/ianstormtaylor/slate/pull/5584) [`884ab424`](https://github.com/ianstormtaylor/slate/commit/884ab4249485e5930f1f79abb939bf375ffd47c0) Thanks [@Elvin7CF](https://github.com/Elvin7CF)! - Fix onCompositionEnd not updating isComposing
+
+## 0.101.3
+
+### Patch Changes
+
+- [#5576](https://github.com/ianstormtaylor/slate/pull/5576) [`8ce52fd4`](https://github.com/ianstormtaylor/slate/commit/8ce52fd494c5156c8f08841b972bc5eda2817c03) Thanks [@qirong77](https://github.com/qirong77)! - fix onCompositionEnd update error.
+
+## 0.101.2
+
+### Patch Changes
+
+- [#5567](https://github.com/ianstormtaylor/slate/pull/5567) [`07f59e36`](https://github.com/ianstormtaylor/slate/commit/07f59e36071bae2b9c09b787f1dd514c6bf859a4) Thanks [@timagixe](https://github.com/timagixe)! - Fix cursor position on selection collapse for RTL direction
+
 ## 0.101.1
 
 ### Patch Changes

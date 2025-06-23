@@ -5,39 +5,44 @@ import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { ErrorBoundary } from 'react-error-boundary'
 
-import { Icon } from '../../components'
+import { Icon } from '../../examples/ts/components/index'
 
-import CheckLists from '../../examples/check-lists'
-import CodeHighlighting from '../../examples/code-highlighting'
-import EditableVoids from '../../examples/editable-voids'
-import Embeds from '../../examples/embeds'
-import ForcedLayout from '../../examples/forced-layout'
-import HoveringToolbar from '../../examples/hovering-toolbar'
-import HugeDocument from '../../examples/huge-document'
-import Images from '../../examples/images'
-import Inlines from '../../examples/inlines'
-import MarkdownPreview from '../../examples/markdown-preview'
-import MarkdownShortcuts from '../../examples/markdown-shortcuts'
-import Mentions from '../../examples/mentions'
-import PasteHtml from '../../examples/paste-html'
-import PlainText from '../../examples/plaintext'
-import ReadOnly from '../../examples/read-only'
-import RichText from '../../examples/richtext'
-import SearchHighlighting from '../../examples/search-highlighting'
-import ShadowDOM from '../../examples/shadow-dom'
-import Styling from '../../examples/styling'
-import Tables from '../../examples/tables'
-import IFrames from '../../examples/iframe'
-import CustomPlaceholder from '../../examples/custom-placeholder'
+import AndroidTests from '../../examples/ts/android-tests'
+import CheckLists from '../../examples/ts/check-lists'
+import CodeHighlighting from '../../examples/ts/code-highlighting'
+import EditableVoids from '../../examples/ts/editable-voids'
+import Embeds from '../../examples/ts/embeds'
+import ForcedLayout from '../../examples/ts/forced-layout'
+import HoveringToolbar from '../../examples/ts/hovering-toolbar'
+import HugeDocument from '../../examples/ts/huge-document'
+import Images from '../../examples/ts/images'
+import Inlines from '../../examples/ts/inlines'
+import MarkdownPreview from '../../examples/ts/markdown-preview'
+import MarkdownShortcuts from '../../examples/ts/markdown-shortcuts'
+import Mentions from '../../examples/ts/mentions'
+import PasteHtml from '../../examples/ts/paste-html'
+import PlainText from '../../examples/ts/plaintext'
+import ReadOnly from '../../examples/ts/read-only'
+import RichText from '../../examples/ts/richtext'
+import SearchHighlighting from '../../examples/ts/search-highlighting'
+import ShadowDOM from '../../examples/ts/shadow-dom'
+import Styling from '../../examples/ts/styling'
+import Tables from '../../examples/ts/tables'
+import IFrames from '../../examples/ts/iframe'
+import CustomPlaceholder from '../../examples/ts/custom-placeholder'
 
 // node
 import { getAllExamples } from '../api'
 
-const EXAMPLES = [
+type ExampleTuple = [name: string, component: React.ComponentType, path: string]
+
+const EXAMPLES: ExampleTuple[] = [
+  ['Android Tests', AndroidTests, 'android-tests'],
   ['Checklists', CheckLists, 'check-lists'],
+  ['Code Highlighting', CodeHighlighting, 'code-highlighting'],
+  ['Custom Placeholder', CustomPlaceholder, 'custom-placeholder'],
   ['Editable Voids', EditableVoids, 'editable-voids'],
   ['Embeds', Embeds, 'embeds'],
-  ['Code Highlighting', CodeHighlighting, 'code-highlighting'],
   ['Forced Layout', ForcedLayout, 'forced-layout'],
   ['Hovering Toolbar', HoveringToolbar, 'hovering-toolbar'],
   ['Huge Document', HugeDocument, 'huge-document'],
@@ -49,16 +54,21 @@ const EXAMPLES = [
   ['Paste HTML', PasteHtml, 'paste-html'],
   ['Plain Text', PlainText, 'plaintext'],
   ['Read-only', ReadOnly, 'read-only'],
+  ['Rendering in iframes', IFrames, 'iframe'],
   ['Rich Text', RichText, 'richtext'],
   ['Search Highlighting', SearchHighlighting, 'search-highlighting'],
   ['Shadow DOM', ShadowDOM, 'shadow-dom'],
   ['Styling', Styling, 'styling'],
   ['Tables', Tables, 'tables'],
-  ['Rendering in iframes', IFrames, 'iframe'],
-  ['Custom placeholder', CustomPlaceholder, 'custom-placeholder'],
 ]
 
-const Header = props => (
+const HIDDEN_EXAMPLES = ['android-tests']
+
+const NON_HIDDEN_EXAMPLES = EXAMPLES.filter(
+  ([, , path]) => !HIDDEN_EXAMPLES.includes(path)
+)
+
+const Header = (props: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     {...props}
     className={css`
@@ -68,12 +78,12 @@ const Header = props => (
       display: flex;
       height: 42px;
       position: relative;
-      z-index: 1; /* To appear above the underlay */
+      z-index: 3; /* To appear above the underlay */
     `}
   />
 )
 
-const Title = props => (
+const Title = (props: React.HTMLAttributes<HTMLSpanElement>) => (
   <span
     {...props}
     className={css`
@@ -82,7 +92,7 @@ const Title = props => (
   />
 )
 
-const LinkList = props => (
+const LinkList = (props: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     {...props}
     className={css`
@@ -92,7 +102,7 @@ const LinkList = props => (
   />
 )
 
-const A = props => (
+const A = (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
   <a
     {...props}
     className={css`
@@ -108,7 +118,22 @@ const A = props => (
   />
 )
 
-const TabList = ({ isVisible, ...props }) => (
+const Pill = (props: React.HTMLAttributes<HTMLSpanElement>) => (
+  <span
+    {...props}
+    className={css`
+      background: #333;
+      border-radius: 9999px;
+      color: #aaa;
+      padding: 0.2em 0.5em;
+    `}
+  />
+)
+
+const TabList = ({
+  isVisible,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement> & { isVisible?: boolean }) => (
   <div
     {...props}
     className={css`
@@ -122,12 +147,15 @@ const TabList = ({ isVisible, ...props }) => (
       width: ${isVisible ? '200px' : '0'};
       white-space: nowrap;
       max-height: 70vh;
-      z-index: 1; /* To appear above the underlay */
+      z-index: 3; /* To appear above the underlay */
     `}
   />
 )
 
-const TabListUnderlay = ({ isVisible, ...props }) => (
+const TabListUnderlay = ({
+  isVisible,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement> & { isVisible?: boolean }) => (
   <div
     {...props}
     className={css`
@@ -137,11 +165,12 @@ const TabListUnderlay = ({ isVisible, ...props }) => (
       top: 0;
       position: fixed;
       width: 100%;
+      z-index: 2;
     `}
   />
 )
 
-const TabButton = props => (
+const TabButton = (props: React.HTMLAttributes<HTMLSpanElement>) => (
   <span
     {...props}
     className={css`
@@ -170,7 +199,7 @@ const Tab = React.forwardRef(
       href: string
       [key: string]: unknown
     }>,
-    ref: Ref<HTMLAnchorElement | null>
+    ref: Ref<HTMLAnchorElement>
   ) => (
     <a
       ref={ref}
@@ -193,7 +222,10 @@ const Tab = React.forwardRef(
   )
 )
 
-const Wrapper = ({ className, ...props }) => (
+const Wrapper = ({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     {...props}
     className={cx(
@@ -207,7 +239,7 @@ const Wrapper = ({ className, ...props }) => (
   />
 )
 
-const ExampleHeader = props => (
+const ExampleHeader = (props: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     {...props}
     className={css`
@@ -217,12 +249,12 @@ const ExampleHeader = props => (
       display: flex;
       height: 42px;
       position: relative;
-      z-index: 1; /* To appear above the underlay */
+      z-index: 3; /* To appear above the underlay */
     `}
   />
 )
 
-const ExampleTitle = props => (
+const ExampleTitle = (props: React.HTMLAttributes<HTMLSpanElement>) => (
   <span
     {...props}
     className={css`
@@ -231,7 +263,7 @@ const ExampleTitle = props => (
   />
 )
 
-const ExampleContent = props => (
+const ExampleContent = (props: React.HTMLAttributes<HTMLDivElement>) => (
   <Wrapper
     {...props}
     className={css`
@@ -240,7 +272,7 @@ const ExampleContent = props => (
   />
 )
 
-const Warning = props => (
+const Warning = (props: React.HTMLAttributes<HTMLDivElement>) => (
   <Wrapper
     {...props}
     className={css`
@@ -257,11 +289,11 @@ const Warning = props => (
 )
 
 const ExamplePage = ({ example }: { example: string }) => {
-  const [error, setError] = useState<Error | undefined>()
-  const [stacktrace, setStacktrace] = useState<ErrorInfo | undefined>()
-  const [showTabs, setShowTabs] = useState<boolean>()
+  const [error, setError] = useState<Error | undefined>(undefined)
+  const [stacktrace, setStacktrace] = useState<ErrorInfo | undefined>(undefined)
+  const [showTabs, setShowTabs] = useState<boolean>(false)
   const EXAMPLE = EXAMPLES.find(e => e[2] === example)
-  const [name, Component, path] = EXAMPLE
+  const [name, Component, path] = EXAMPLE!
   return (
     <ErrorBoundary
       onError={(error, stacktrace) => {
@@ -316,14 +348,19 @@ const ExamplePage = ({ example }: { example: string }) => {
           <ExampleTitle>
             {name}
             <A
-              href={`https://github.com/ianstormtaylor/slate/blob/main/site/examples/${path}.tsx`}
+              href={`https://github.com/ianstormtaylor/slate/blob/main/site/examples/js/${path}.jsx`}
             >
-              (View Source)
+              <Pill>JS Code</Pill>
+            </A>
+            <A
+              href={`https://github.com/ianstormtaylor/slate/blob/main/site/examples/ts/${path}.tsx`}
+            >
+              <Pill>TS Code</Pill>
             </A>
           </ExampleTitle>
         </ExampleHeader>
         <TabList isVisible={showTabs}>
-          {EXAMPLES.map(([n, , p]) => (
+          {NON_HIDDEN_EXAMPLES.map(([n, , p]) => (
             <Link
               key={p as string}
               href="/examples/[example]"

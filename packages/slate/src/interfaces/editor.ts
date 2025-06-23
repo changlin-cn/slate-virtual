@@ -54,7 +54,13 @@ export interface BaseEditor {
   isElementReadOnly: (element: Element) => boolean
   isSelectable: (element: Element) => boolean
   markableVoid: (element: Element) => boolean
-  normalizeNode: (entry: NodeEntry, options?: { operation?: Operation }) => void
+  normalizeNode: (
+    entry: NodeEntry,
+    options?: {
+      operation?: Operation
+      fallbackElement?: () => Element
+    }
+  ) => void
   onChange: (options?: { operation?: Operation }) => void
   shouldNormalize: ({
     iteration,
@@ -167,6 +173,9 @@ export interface BaseEditor {
   string: OmitFirstArg<typeof Editor.string>
   unhangRange: OmitFirstArg<typeof Editor.unhangRange>
   void: OmitFirstArg<typeof Editor.void>
+  shouldMergeNodesRemovePrevNode: OmitFirstArg<
+    typeof Editor.shouldMergeNodesRemovePrevNode
+  >
 }
 
 export type Editor = ExtendedType<'Editor', BaseEditor>
@@ -210,6 +219,10 @@ export interface EditorFragmentDeletionOptions {
   direction?: TextDirection
 }
 
+export interface EditorIsEditorOptions {
+  deep?: boolean
+}
+
 export interface EditorLeafOptions {
   depth?: number
   edge?: LeafEdge
@@ -241,7 +254,7 @@ export interface EditorNodesOptions<T extends Node> {
   universal?: boolean
   reverse?: boolean
   voids?: boolean
-  ignoreNonSelectable?: boolean
+  pass?: (entry: NodeEntry) => boolean
 }
 
 export interface EditorNormalizeOptions {
@@ -276,7 +289,6 @@ export interface EditorPositionsOptions {
   unit?: TextUnitAdjustment
   reverse?: boolean
   voids?: boolean
-  ignoreNonSelectable?: boolean
 }
 
 export interface EditorPreviousOptions<T extends Node> {
@@ -465,7 +477,7 @@ export interface EditorInterface {
   /**
    * Check if a value is an `Editor` object.
    */
-  isEditor: (value: any) => value is Editor
+  isEditor: (value: any, options?: EditorIsEditorOptions) => value is Editor
 
   /**
    * Check if a value is a read-only `Element` object.
@@ -709,6 +721,15 @@ export interface EditorInterface {
    * Call a function, deferring normalization until after it completes.
    */
   withoutNormalizing: (editor: Editor, fn: () => void) => void
+
+  /**
+   *  Call a function, Determine whether or not remove the previous node when merge.
+   */
+  shouldMergeNodesRemovePrevNode: (
+    editor: Editor,
+    prevNodeEntry: NodeEntry,
+    curNodeEntry: NodeEntry
+  ) => boolean
 }
 
 // eslint-disable-next-line no-redeclare
@@ -952,6 +973,9 @@ export const Editor: EditorInterface = {
 
   withoutNormalizing(editor, fn: () => void) {
     editor.withoutNormalizing(fn)
+  },
+  shouldMergeNodesRemovePrevNode: (editor, prevNode, curNode) => {
+    return editor.shouldMergeNodesRemovePrevNode(prevNode, curNode)
   },
 }
 

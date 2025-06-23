@@ -39,6 +39,17 @@ Undo to the previous saved state.
 
 ### Merging and Saving
 
+#### `HistoryEditor.withMerging(editor: HistoryEditor, fn: () => void): void`
+
+Apply a series of changes inside a synchronous `fn`, These operations will
+be merged into the previous history.
+
+#### `HistoryEditor.withNewBatch(editor: HistoryEditor, fn: () => void): void`
+
+Apply a series of changes inside a synchronous `fn`, ensuring that the first
+operation starts a new batch in the history. Subsequent operations will be
+merged as usual.
+
 #### `HistoryEditor.withoutMerging(editor: HistoryEditor, fn: () => void): void`
 
 Apply a series of changes inside a synchronous `fn`, without merging any of

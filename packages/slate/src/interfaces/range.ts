@@ -1,6 +1,4 @@
-import { produce } from 'immer'
-import { isPlainObject } from 'is-plain-object'
-import { ExtendedType, Operation, Path, Point, PointEntry } from '..'
+import { ExtendedType, Operation, Path, Point, PointEntry, isObject } from '..'
 import { RangeDirection } from '../types/types'
 
 /**
@@ -45,6 +43,11 @@ export interface RangeInterface {
    * Check if a range includes a path, a point or part of another range.
    */
   includes: (range: Range, target: Path | Point | Range) => boolean
+
+  /**
+   * Check if a range includes another range.
+   */
+  surrounds: (range: Range, target: Range) => boolean
 
   /**
    * Get the intersection of a range with another.
@@ -124,6 +127,14 @@ export const Range: RangeInterface = {
     )
   },
 
+  surrounds(range: Range, target: Range): boolean {
+    const intersectionRange = Range.intersection(range, target)
+    if (!intersectionRange) {
+      return false
+    }
+    return Range.equals(intersectionRange, target)
+  },
+
   includes(range: Range, target: Path | Point | Range): boolean {
     if (Range.isRange(target)) {
       if (
@@ -187,7 +198,7 @@ export const Range: RangeInterface = {
 
   isRange(value: any): value is Range {
     return (
-      isPlainObject(value) &&
+      isObject(value) &&
       Point.isPoint(value.anchor) &&
       Point.isPoint(value.focus)
     )
@@ -208,47 +219,47 @@ export const Range: RangeInterface = {
     op: Operation,
     options: RangeTransformOptions = {}
   ): Range | null {
-    return produce(range, r => {
-      if (r === null) {
-        return null
-      }
-      const { affinity = 'inward' } = options
-      let affinityAnchor: 'forward' | 'backward' | null
-      let affinityFocus: 'forward' | 'backward' | null
+    if (range === null) {
+      return null
+    }
 
-      if (affinity === 'inward') {
-        // If the range is collapsed, make sure to use the same affinity to
-        // avoid the two points passing each other and expanding in the opposite
-        // direction
-        const isCollapsed = Range.isCollapsed(r)
-        if (Range.isForward(r)) {
-          affinityAnchor = 'forward'
-          affinityFocus = isCollapsed ? affinityAnchor : 'backward'
-        } else {
-          affinityAnchor = 'backward'
-          affinityFocus = isCollapsed ? affinityAnchor : 'forward'
-        }
-      } else if (affinity === 'outward') {
-        if (Range.isForward(r)) {
-          affinityAnchor = 'backward'
-          affinityFocus = 'forward'
-        } else {
-          affinityAnchor = 'forward'
-          affinityFocus = 'backward'
-        }
+    const { affinity = 'inward' } = options
+    let affinityAnchor: 'forward' | 'backward' | null
+    let affinityFocus: 'forward' | 'backward' | null
+
+    if (affinity === 'inward') {
+      // If the range is collapsed, make sure to use the same affinity to
+      // avoid the two points passing each other and expanding in the opposite
+      // direction
+      const isCollapsed = Range.isCollapsed(range)
+      if (Range.isForward(range)) {
+        affinityAnchor = 'forward'
+        affinityFocus = isCollapsed ? affinityAnchor : 'backward'
       } else {
-        affinityAnchor = affinity
-        affinityFocus = affinity
+        affinityAnchor = 'backward'
+        affinityFocus = isCollapsed ? affinityAnchor : 'forward'
       }
-      const anchor = Point.transform(r.anchor, op, { affinity: affinityAnchor })
-      const focus = Point.transform(r.focus, op, { affinity: affinityFocus })
-
-      if (!anchor || !focus) {
-        return null
+    } else if (affinity === 'outward') {
+      if (Range.isForward(range)) {
+        affinityAnchor = 'backward'
+        affinityFocus = 'forward'
+      } else {
+        affinityAnchor = 'forward'
+        affinityFocus = 'backward'
       }
-
-      r.anchor = anchor
-      r.focus = focus
+    } else {
+      affinityAnchor = affinity
+      affinityFocus = affinity
+    }
+    const anchor = Point.transform(range.anchor, op, {
+      affinity: affinityAnchor,
     })
+    const focus = Point.transform(range.focus, op, { affinity: affinityFocus })
+
+    if (!anchor || !focus) {
+      return null
+    }
+
+    return { anchor, focus }
   },
 }

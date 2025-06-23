@@ -1,4 +1,4 @@
-import { Editor, Operation, Path, Range, Transforms } from 'slate'
+import { Editor, Operation, Path, Transforms } from 'slate'
 
 import { HistoryEditor } from './history-editor'
 
@@ -83,11 +83,16 @@ export const withHistory = <T extends Editor>(editor: T) => {
       if (merge == null) {
         if (lastBatch == null) {
           merge = false
-        } else if (operations.length !== 0) {
+        } else if (operations.includes(lastOp)) {
           merge = true
         } else {
           merge = shouldMerge(op, lastOp)
         }
+      }
+
+      if (HistoryEditor.isSplittingOnce(e)) {
+        merge = false
+        HistoryEditor.setSplittingOnce(e, undefined)
       }
 
       if (lastBatch && merge) {

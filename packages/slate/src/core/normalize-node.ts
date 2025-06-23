@@ -7,7 +7,8 @@ import { Editor } from '../interfaces/editor'
 
 export const normalizeNode: WithEditorFirstArg<Editor['normalizeNode']> = (
   editor,
-  entry
+  entry,
+  options
 ) => {
   const [node, path] = entry
 
@@ -53,7 +54,18 @@ export const normalizeNode: WithEditorFirstArg<Editor['normalizeNode']> = (
     // other inline nodes, or parent blocks that only contain inlines and
     // text.
     if (isInlineOrText !== shouldHaveInlines) {
-      Transforms.removeNodes(editor, { at: path.concat(n), voids: true })
+      if (isInlineOrText) {
+        if (options?.fallbackElement) {
+          Transforms.wrapNodes(editor, options.fallbackElement(), {
+            at: path.concat(n),
+            voids: true,
+          })
+        } else {
+          Transforms.removeNodes(editor, { at: path.concat(n), voids: true })
+        }
+      } else {
+        Transforms.unwrapNodes(editor, { at: path.concat(n), voids: true })
+      }
       n--
     } else if (Element.isElement(child)) {
       // Ensure that inline nodes are surrounded by text nodes.
@@ -75,6 +87,19 @@ export const normalizeNode: WithEditorFirstArg<Editor['normalizeNode']> = (
         }
       }
     } else {
+      // If the child is not a text node, and doesn't have a `children` field,
+      // then we have an invalid node that will upset slate.
+      //
+      // eg: `{ type: 'some_node' }`.
+      //
+      // To prevent slate from breaking, we can add the `children` field,
+      // and now that it is valid, we can to many more operations easily,
+      // such as extend normalizers to fix erronous structure.
+      if (!Text.isText(child) && !('children' in child)) {
+        const elementChild = child as Element
+        elementChild.children = []
+      }
+
       // Merge adjacent text nodes that are empty or match.
       if (prev != null && Text.isText(prev)) {
         if (Text.equals(child, prev, { loose: true })) {

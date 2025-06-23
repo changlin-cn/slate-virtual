@@ -21,6 +21,7 @@ These extensions and plugins add additional features and capabilities to Slate:
 - [`slate-yjs`](https://github.com/BitPhinix/slate-yjs/) Collaborative editing utilities for Slate leveraging Yjs
 - [`slate-collaborative`](https://github.com/cudr/slate-collaborative) Collaborative editing utilities for Slate
   leveraging Automerge
+- [`slate-vue3`](https://github.com/Guan-Erjia/slate-vue3) Which is a useful supplement to Slate for building a rich text editor using Vue3, integrated all functions in an npm package
 
 ## Products
 
@@ -32,7 +33,9 @@ These products use Slate, and can give you an idea of what's possible:
 - [Chatterbug](https://chatterbug.com/): Learn languages from real people
 - [CoCalc](https://cocalc.com/): Collaborative calculation and data science
 - [Coda](https://coda.io/): Coda brings all your words, data, and teamwork into one powerful doc
+- [Decap CMS](https://decapcms.org/): Open source content management for your Git workflow
 - [Dropdeck](https://www.dropdeck.com/): Magically create beautiful slides — faster than ever
+- [Easy Email Pro](https://www.easyemail.pro/): A powerful, highly customizable email editor
 - [Eraser](https://www.tryeraser.com/): The Whiteboard for Engineering Teams
 - [GitBook](https://www.gitbook.com/): Plan, centralize and share knowledge
 - [Discord](https://discord.com/): Text & voice channels to collaborate & share
@@ -40,9 +43,10 @@ These products use Slate, and can give you an idea of what's possible:
 - [Guilded](https://www.guilded.gg/): Better chat, happier communities
 - [Guru](https://www.getguru.com/): Organize company information. Access it anywhere. [wiki]
 - [Hygraph](https://hygraph.com/): The federated content platform
+- [Hot Page](https://hot.page/): A graphical website builder for writing HTML and CSS from scratch
 - [Kitemaker](https://kitemaker.co/): Product development tool built to manage the work, not the workers
 - [Living Spec](https://livingspec.com/): A modern way for product teams to work
-- [Netlify CMS](https://www.netlifycms.org/): Open source content management for your Git workflow
+- [Notestamp](https://notestamp.com): A note-taking web app that synchronizes your notes to audio, video and pdfs.
 - [Notes Together](https://notestogether.hominidsoftware.com/): Get mundane details out of your head
 - [Prezly](https://www.prezly.com/): Turn your audience into fans
 - [Quill Forms](https://demo.quillforms.com/): Open Source Typeform Alternative WordPress Plugin
@@ -67,13 +71,13 @@ These pre-packaged editors are built on top of Slate, and can be helpful to see 
 - [French Press Editor](https://github.com/roast-cms/french-press-editor) is a customizeable editor with offline
   support.
 - [Nossas Editor](http://slate-editor.bonde.org/) is a drop-in WYSIWYG editor.
+- [Notestamp](https://github.com/fortyoneplustwo/notestamp-editor-react): Synchronize your text entries to media using this rich text editor that inserts clickable stamps alongside text.
 - [React Force Slate Editor](https://github.com/nareshbhatia/react-force/tree/master/packages/slate-editor) is a
   light-weight medium-style editor with no editor chrome.
 - [React Page](https://github.com/react-page/react-page) is a self-contained, customizable inline WYSIWYG editor
   library.
 - [Plate (Plugins for Slate)](https://github.com/udecode/plate) provides an editor with configurable and
   extendable plugins.
--
 - [Tripdocs](https://github.com/ctripcorp/tripdocs): It's a modern, production-ready rich text editor.
 
 \(Or, if you have their exact use case, can be a drop-in editor for you.\)

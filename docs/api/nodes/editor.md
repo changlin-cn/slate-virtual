@@ -141,7 +141,7 @@ Options: `depth?: number, edge?: 'start' | 'end'`
 
 At any given `Location` or `Span` in the editor provided by `at` (default is the current selection), the method returns a Generator of `NodeEntry` objects that represent the nodes that include `at`. At the top of the hierarchy is the `Editor` object itself.
 
-Options: `{at?: Location | Span, match?: NodeMatch, mode?: 'all' | 'highest' | 'lowest', universal?: boolean, reverse?: boolean, voids?: boolean}`
+Options: `{at?: Location | Span, match?: NodeMatch, mode?: 'all' | 'highest' | 'lowest', universal?: boolean, reverse?: boolean, voids?: boolean, pass?: (node: NodeEntry => boolean)}`
 
 `options.match`: Provide a value to the `match?` option to limit the `NodeEntry` objects that are returned.
 
@@ -150,6 +150,8 @@ Options: `{at?: Location | Span, match?: NodeMatch, mode?: 'all' | 'highest' | '
 - `'all'` (default): Return all matching nodes
 - `'highest'`: in a hierarchy of nodes, only return the highest level matching nodes
 - `'lowest'`: in a hierarchy of nodes, only return the lowest level matching nodes
+
+`options.pass`: Skip the descendants of certain nodes (but not the nodes themselves).
 
 #### `Editor.parent(editor: Editor, at: Location, options?) => NodeEntry<Ancestor>`
 
@@ -165,7 +167,7 @@ Options: `{depth?: number, edge?: 'start' | 'end'}`
 
 #### `Editor.point(editor: Editor, at: Location, options?) => Point`
 
-Get the start or end point of a location.
+Get the `start` or `end` (default is `start`) point of a location.
 
 Options: `{edge?: 'start' | 'end'}`
 
@@ -245,6 +247,10 @@ Delete the content in the current selection.
 #### `Editor.insertBreak(editor: Editor) => void`
 
 Insert a block break at the current selection.
+
+#### `Editor.insertSoftBreak(editor: Editor) => void`
+
+Insert a soft break at the current selection.
 
 #### `Editor.insertFragment(editor: Editor, fragment: Node[], options?) => void`
 
@@ -346,7 +352,7 @@ Options: `{force?: boolean; operation?: Operation}`
 #### `Editor.withoutNormalizing(editor: Editor, fn: () => void) => void`
 
 Call a function, deferring normalization until after it completes.
-See [Normalization - Implications for Other Code](./11-normalizing.md#implications-for-other-code);
+See [Normalization - Implications for Other Code](../../concepts/11-normalizing.md#implications-for-other-code);
 
 ### Ref Methods
 
@@ -412,7 +418,7 @@ Check if a value is a void `Element` object.
 
 ### Normalize methods
 
-#### `normalizeNode(entry: NodeEntry, { operation }) => void`
+#### `normalizeNode(entry: NodeEntry, { operation, fallbackElement }) => void`
 
 [Normalize](../../concepts/11-normalizing.md) a Node according to the schema.
 
@@ -444,7 +450,7 @@ Remove a custom property from the leaf text nodes within non-void nodes or void 
 
 ### getFragment method
 
-#### `getFragment() => Descendant`
+#### `getFragment() => Descendant[]`
 
 Returns the fragment at the current selection. Used when cutting or copying, as an example, to get the fragment at the current selection.
 

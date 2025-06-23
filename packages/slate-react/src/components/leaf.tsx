@@ -6,17 +6,13 @@ import React, {
   useEffect,
 } from 'react'
 import { JSX } from 'react'
-import { Element, Text } from 'slate'
+import { Element, LeafPosition, Text } from 'slate'
 import { ResizeObserver as ResizeObserverPolyfill } from '@juggle/resize-observer'
 import String from './string'
-import {
-  PLACEHOLDER_SYMBOL,
-  EDITOR_TO_PLACEHOLDER_ELEMENT,
-  EDITOR_TO_FORCE_RENDER,
-} from '../utils/weak-maps'
+import { PLACEHOLDER_SYMBOL, EDITOR_TO_PLACEHOLDER_ELEMENT } from 'slate-dom'
 import { RenderLeafProps, RenderPlaceholderProps } from './editable'
 import { useSlateStatic } from '../hooks/use-slate-static'
-import { IS_WEBKIT, IS_ANDROID } from '../utils/environment'
+import { IS_WEBKIT, IS_ANDROID } from 'slate-dom'
 
 // Delay the placeholder on Android to prevent the keyboard from closing.
 // (https://github.com/ianstormtaylor/slate/pull/5368)
@@ -43,6 +39,8 @@ function clearTimeoutRef(timeoutRef: MutableRefObject<TimerId>) {
   }
 }
 
+const defaultRenderLeaf = (props: RenderLeafProps) => <DefaultLeaf {...props} />
+
 /**
  * Individual leaves in a text node with unique formatting.
  */
@@ -53,6 +51,7 @@ const Leaf = (props: {
   renderPlaceholder: (props: RenderPlaceholderProps) => JSX.Element
   renderLeaf?: (props: RenderLeafProps) => JSX.Element
   text: Text
+  leafPosition?: LeafPosition
 }) => {
   const {
     leaf,
@@ -60,7 +59,8 @@ const Leaf = (props: {
     text,
     parent,
     renderPlaceholder,
-    renderLeaf = (props: RenderLeafProps) => <DefaultLeaf {...props} />,
+    renderLeaf = defaultRenderLeaf,
+    leafPosition,
   } = props
 
   const editor = useSlateStatic()
@@ -142,8 +142,8 @@ const Leaf = (props: {
 
     children = (
       <React.Fragment>
-        {renderPlaceholder(placeholderProps)}
         {children}
+        {renderPlaceholder(placeholderProps)}
       </React.Fragment>
     )
   }
@@ -157,7 +157,13 @@ const Leaf = (props: {
     'data-slate-leaf': true,
   }
 
-  return renderLeaf({ attributes, children, leaf, text })
+  return renderLeaf({
+    attributes,
+    children,
+    leaf,
+    text,
+    leafPosition,
+  })
 }
 
 const MemoizedLeaf = React.memo(Leaf, (prev, next) => {

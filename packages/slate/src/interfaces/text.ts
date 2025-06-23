@@ -1,5 +1,4 @@
-import { isPlainObject } from 'is-plain-object'
-import { Range } from '..'
+import { Range, isObject } from '..'
 import { ExtendedType } from '../types/custom-types'
 import { isDeepEqual } from '../utils/deep-equal'
 
@@ -15,8 +14,23 @@ export interface BaseText {
 
 export type Text = ExtendedType<'Text', BaseText>
 
+export interface LeafPosition {
+  start: number
+  end: number
+  isFirst?: true
+  isLast?: true
+}
+
 export interface TextEqualsOptions {
   loose?: boolean
+}
+
+export type DecoratedRange = Range & {
+  /**
+   * Customize how another decoration is merged into a text node. If not specified, `Object.assign` would be used.
+   * It is useful for overlapping decorations with the same key but different values.
+   */
+  merge?: (leaf: Text, decoration: object) => void
 }
 
 export interface TextInterface {
@@ -54,7 +68,10 @@ export interface TextInterface {
   /**
    * Get the leaves for a text node given decorations.
    */
-  decorations: (node: Text, decorations: Range[]) => Text[]
+  decorations: (
+    node: Text,
+    decorations: DecoratedRange[]
+  ) => { leaf: Text; position?: LeafPosition }[]
 }
 
 // eslint-disable-next-line no-redeclare
@@ -75,7 +92,7 @@ export const Text: TextInterface = {
   },
 
   isText(value: any): value is Text {
-    return isPlainObject(value) && typeof value.text === 'string'
+    return isObject(value) && typeof value.text === 'string'
   },
 
   isTextList(value: any): value is Text[] {
@@ -103,26 +120,32 @@ export const Text: TextInterface = {
     return true
   },
 
-  decorations(node: Text, decorations: Range[]): Text[] {
-    let leaves: Text[] = [{ ...node }]
+  decorations(
+    node: Text,
+    decorations: DecoratedRange[]
+  ): { leaf: Text; position?: LeafPosition }[] {
+    let leaves: { leaf: Text; position?: LeafPosition }[] = [
+      { leaf: { ...node } },
+    ]
 
     for (const dec of decorations) {
-      const { anchor, focus, ...rest } = dec
+      const { anchor, focus, merge: mergeDecoration, ...rest } = dec
       const [start, end] = Range.edges(dec)
       const next = []
       let leafEnd = 0
       const decorationStart = start.offset
       const decorationEnd = end.offset
+      const merge = mergeDecoration ?? Object.assign
 
-      for (const leaf of leaves) {
+      for (const { leaf } of leaves) {
         const { length } = leaf.text
         const leafStart = leafEnd
         leafEnd += length
 
         // If the range encompasses the entire leaf, add the range.
         if (decorationStart <= leafStart && leafEnd <= decorationEnd) {
-          Object.assign(leaf, rest)
-          next.push(leaf)
+          merge(leaf, rest)
+          next.push({ leaf })
           continue
         }
 
@@ -134,7 +157,7 @@ export const Text: TextInterface = {
           decorationEnd < leafStart ||
           (decorationEnd === leafStart && leafStart !== 0)
         ) {
-          next.push(leaf)
+          next.push({ leaf })
           continue
         }
 
@@ -147,23 +170,23 @@ export const Text: TextInterface = {
 
         if (decorationEnd < leafEnd) {
           const off = decorationEnd - leafStart
-          after = { ...middle, text: middle.text.slice(off) }
+          after = { leaf: { ...middle, text: middle.text.slice(off) } }
           middle = { ...middle, text: middle.text.slice(0, off) }
         }
 
         if (decorationStart > leafStart) {
           const off = decorationStart - leafStart
-          before = { ...middle, text: middle.text.slice(0, off) }
+          before = { leaf: { ...middle, text: middle.text.slice(0, off) } }
           middle = { ...middle, text: middle.text.slice(off) }
         }
 
-        Object.assign(middle, rest)
+        merge(middle, rest)
 
         if (before) {
           next.push(before)
         }
 
-        next.push(middle)
+        next.push({ leaf: middle })
 
         if (after) {
           next.push(after)
@@ -171,6 +194,21 @@ export const Text: TextInterface = {
       }
 
       leaves = next
+    }
+
+    if (leaves.length > 1) {
+      let currentOffset = 0
+      for (const [index, item] of leaves.entries()) {
+        const start = currentOffset
+        const end = start + item.leaf.text.length
+        const position: LeafPosition = { start, end }
+
+        if (index === 0) position.isFirst = true
+        if (index === leaves.length - 1) position.isLast = true
+
+        item.position = position
+        currentOffset = end
+      }
     }
 
     return leaves

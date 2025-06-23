@@ -1,5 +1,106 @@
 # slate
 
+## 0.117.0
+
+### Minor Changes
+
+- [#5885](https://github.com/ianstormtaylor/slate/pull/5885) [`c56a98fd`](https://github.com/ianstormtaylor/slate/commit/c56a98fd65183ddd9e0e711e615687bf2437e677) Thanks [@felixfeng33](https://github.com/felixfeng33)! - - Remove `ignoreNonSelectable` option from positions,before,after,nodes.
+  - Fix move behavior when encounter non-selectable inline voids.
+
+### Patch Changes
+
+- [#5890](https://github.com/ianstormtaylor/slate/pull/5890) [`9862ae71`](https://github.com/ianstormtaylor/slate/commit/9862ae71bff60d99f423b44937ec9cf662698622) Thanks [@joblolin95](https://github.com/joblolin95)! - Handle backspace correctly for grapheme clusters in Burmese, Hindi, Khmer, Malayalam, Oriya, Punjabi, Tamil, and Telugu.
+
+## 0.116.0
+
+### Patch Changes
+
+- [#5871](https://github.com/ianstormtaylor/slate/pull/5871) [`fb87646e`](https://github.com/ianstormtaylor/slate/commit/fb87646e8643e1d0547134cea9d1f57912f06a92) Thanks [@12joan](https://github.com/12joan)! - - PERF: Use pure JS instead of Immer for applying operations and transforming points and ranges. Immer is now used only for producing fragments.
+
+## 0.115.1
+
+### Patch Changes
+
+- [#5887](https://github.com/ianstormtaylor/slate/pull/5887) [`293aca9c`](https://github.com/ianstormtaylor/slate/commit/293aca9c7aa20ec5b99bbe1130237fa6b7ee758d) Thanks [@12joan](https://github.com/12joan)! - Handle backspace correctly for grapheme clusters in Bengali
+
+## 0.115.0
+
+### Minor Changes
+
+- [#5878](https://github.com/ianstormtaylor/slate/pull/5878) [`11b957a4`](https://github.com/ianstormtaylor/slate/commit/11b957a44171634d032d79ad8feaf548b78e58b0) Thanks [@ahoisl](https://github.com/ahoisl)! - Allow to prevent data-loss in normalizeNode
+
+### Patch Changes
+
+- [#5880](https://github.com/ianstormtaylor/slate/pull/5880) [`de260565`](https://github.com/ianstormtaylor/slate/commit/de260565c70c1a39acd02961f76ede6ff094b881) Thanks [@nabbydude](https://github.com/nabbydude)! - Optimize editor#above and allow passing a location that doesnt exist as long as its parent exists
+
+- [#5875](https://github.com/ianstormtaylor/slate/pull/5875) [`896bc9c7`](https://github.com/ianstormtaylor/slate/commit/896bc9c7c75e929e861e341fc4d7cc7395e8e82a) Thanks [@12joan](https://github.com/12joan)! - Fix: Inserting a fragment containing exactly two blocks merges those blocks together.
+
+- [#5859](https://github.com/ianstormtaylor/slate/pull/5859) [`72532fd2`](https://github.com/ianstormtaylor/slate/commit/72532fd2d7be594251ea26fefb5c1ce8337b76ed) Thanks [@12joan](https://github.com/12joan)! - Optimize `isElement`, `isText`, `isNodeList` and `isEditor` by removing dependency on `is-plain-object` and by performing shallow checks by default. To perform a full check, including all descendants, pass the `{ deep: true }` option to `isElement`, `isNodeList` or `isEditor`.
+
+## 0.114.0
+
+### Minor Changes
+
+- [#5850](https://github.com/ianstormtaylor/slate/pull/5850) [`22a3dda3`](https://github.com/ianstormtaylor/slate/commit/22a3dda36d4362d5dfdb9a75836297dae8cd7f9e) Thanks [@zbeyens](https://github.com/zbeyens)! - - Update `Text.decorations` to return the positions in addition to the leaf nodes: `{ leaf: Text, position?: { start: number, end: number, isFirst: boolean, isLast: boolean } }[]`.
+
+## 0.113.0
+
+### Minor Changes
+
+- [#5843](https://github.com/ianstormtaylor/slate/pull/5843) [`63c0db5b`](https://github.com/ianstormtaylor/slate/commit/63c0db5b862137490baf2883d4378efd0b6311de) Thanks [@12joan](https://github.com/12joan)! - Add `pass` option to `Editor.nodes`, which is passed through to `Node.nodes`.
+
+### Patch Changes
+
+- [#5842](https://github.com/ianstormtaylor/slate/pull/5842) [`463ef3a6`](https://github.com/ianstormtaylor/slate/commit/463ef3a6504020a869fa06e4dd722f72de32677a) Thanks [@wkq](https://github.com/wkq)! - fix: correct dirty path update for Text nodes
+
+## 0.112.0
+
+### Minor Changes
+
+- [#5776](https://github.com/ianstormtaylor/slate/pull/5776) [`5a1c728c`](https://github.com/ianstormtaylor/slate/commit/5a1c728c62bcc6bafe60b9598946bb3adde21cdf) Thanks [@yf-yang](https://github.com/yf-yang)! - Add `merge` optional function to decorations and change related type signatures to `DecoratedRange`. Now developers can specify how two decoration object with the same key but different value are merged together if they overlap"
+
+### Patch Changes
+
+- [#5768](https://github.com/ianstormtaylor/slate/pull/5768) [`4bc552f7`](https://github.com/ianstormtaylor/slate/commit/4bc552f71ff75c4b7ad18386a65dabdd8b4e1bba) Thanks [@ahoisl](https://github.com/ahoisl)! - Keep data in normalization when blocks are not allowed
+
+## 0.110.2
+
+### Patch Changes
+
+- [#5723](https://github.com/ianstormtaylor/slate/pull/5723) [`ee2c4540`](https://github.com/ianstormtaylor/slate/commit/ee2c45408cba9ca827df3bab0696ba5cb5ace886) Thanks [@RavenColEvol](https://github.com/RavenColEvol)! - feat: add Node.getIf method
+
+- [#5725](https://github.com/ianstormtaylor/slate/pull/5725) [`f31167cf`](https://github.com/ianstormtaylor/slate/commit/f31167cf5fa0b4f0385cd4db9123ebe403141e11) Thanks [@WindRunnerMax](https://github.com/WindRunnerMax)! - fix marks at the start of the selection
+
+- [#5729](https://github.com/ianstormtaylor/slate/pull/5729) [`b1a10216`](https://github.com/ianstormtaylor/slate/commit/b1a1021612b504bbc75488d650dc4d3eb926f20c) Thanks [@electroluxcode](https://github.com/electroluxcode)! - feat: add prop surrounds with range
+
+## 0.103.0
+
+### Minor Changes
+
+- [#5621](https://github.com/ianstormtaylor/slate/pull/5621) [`d271c4be`](https://github.com/ianstormtaylor/slate/commit/d271c4be543027be2197f353d7ea61b51e9c48c6) Thanks [@felixfeng33](https://github.com/felixfeng33)! - Add a `shouldMergeNodesRemovePrevNode` editor method to control when `Transforms.mergeNodes` should remove the previous node rather than carrying out a merge operation.
+
+### Patch Changes
+
+- [#5620](https://github.com/ianstormtaylor/slate/pull/5620) [`4470f370`](https://github.com/ianstormtaylor/slate/commit/4470f370570ed1f2dce8b4b58d6117d3a87fa6c0) Thanks [@JohnCosta27](https://github.com/JohnCosta27)! - Making `normalizeNode` capable of normalizing erronous nodes, making slate more resilient.
+
+## 0.102.0
+
+### Minor Changes
+
+- [#5543](https://github.com/ianstormtaylor/slate/pull/5543) [`3aaf3b51`](https://github.com/ianstormtaylor/slate/commit/3aaf3b517c2020c198bffe0f3aa8156746914408) Thanks [@mainhanu](https://github.com/mainhanu)! - Transform.insertNodes & Transform.insertFragment performance optimize
+
+## 0.101.5
+
+### Patch Changes
+
+- [#5316](https://github.com/ianstormtaylor/slate/pull/5316) [`8ba3a9c0`](https://github.com/ianstormtaylor/slate/commit/8ba3a9c0348f73324b7c9ec32a4bbd348564d4f0) Thanks [@GeneralChauhan](https://github.com/GeneralChauhan)! - Punctuation Mark "+" Support Added
+
+## 0.101.4
+
+### Patch Changes
+
+- [#5580](https://github.com/ianstormtaylor/slate/pull/5580) [`a374895b`](https://github.com/ianstormtaylor/slate/commit/a374895b3265ad60dbfe563eaa1a9415a440620e) Thanks [@Kaporos](https://github.com/Kaporos)! - Fix firefox double-click marks issue
+
 ## 0.101.1
 
 ### Patch Changes
