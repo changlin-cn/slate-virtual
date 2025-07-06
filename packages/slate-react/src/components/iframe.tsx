@@ -1,5 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useMemo } from 'react'
 import { createPortal } from 'react-dom'
+import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect'
+import { EDITOR_TO_WINDOW } from 'slate-dom'
+import { useSlate } from '../hooks/use-slate'
 
 interface AutoHeightIFrameProps
   extends React.IframeHTMLAttributes<HTMLIFrameElement> {
@@ -7,6 +10,7 @@ interface AutoHeightIFrameProps
   scrollOffset?: number
   observeRootElement?: boolean
   preserveFocusStyle?: boolean // 是否保持焦点状态下的选择样式
+  onRendered?: () => void
 }
 
 export const IFrame: React.FC<AutoHeightIFrameProps> = ({
@@ -15,6 +19,7 @@ export const IFrame: React.FC<AutoHeightIFrameProps> = ({
   observeRootElement = true,
   scrollOffset = 0,
   style = {},
+  onRendered = () => {},
   ...props
 }) => {
   const [mountNode, setMountNode] = useState<HTMLElement | null>(null)
@@ -23,40 +28,25 @@ export const IFrame: React.FC<AutoHeightIFrameProps> = ({
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const resizeObserverRef = useRef<ResizeObserver | null>(null)
 
-  // 解决焦点状态下文本选择变灰问题
-  const addSelectionStyles = (document: Document) => {
-    const head = document.head || document.getElementsByTagName('head')[0]
-    const existingStyle = document.getElementById('selection-style')
-
-    if (existingStyle) return
-
-    const style = document.createElement('style')
-    style.id = 'selection-style'
-    style.textContent = `
-      ::selection {
-        background: ${preserveFocusStyle ? '#3a8af7' : '#a0c5ff'};
-        color: white;
-      }
-      
-      ::-moz-selection {
-        background: ${preserveFocusStyle ? '#3a8af7' : '#a0c5ff'};
-        color: white;
-      }
-      
-      /* 覆盖非焦点状态下的选择样式 */
+  const styleContent = useMemo(() => {
+    const str = `
+      ${
+        preserveFocusStyle
+          ? `
       :not(:focus)::selection {
-        background: ${preserveFocusStyle ? '#3a8af7' : '#a0c5ff'};
+        background: #3a8af7;
         color: white;
       }
-      
       :not(:focus)::-moz-selection {
-        background: ${preserveFocusStyle ? '#3a8af7' : '#a0c5ff'};
+        background: #3a8af7;
         color: white;
+      }
+        `
+          : ''
       }
     `
-
-    head.appendChild(style)
-  }
+    return str
+  }, [preserveFocusStyle])
 
   // 处理 iframe 加载完成
   const handleLoad = (e: React.SyntheticEvent<HTMLIFrameElement>) => {
@@ -70,9 +60,6 @@ export const IFrame: React.FC<AutoHeightIFrameProps> = ({
       iframeDoc.body.style.margin = '0'
       iframeDoc.body.style.padding = '0'
 
-      // 添加统一的文本选择样式
-      addSelectionStyles(iframeDoc)
-
       // 设置挂载点
       setMountNode(iframeDoc.body)
       setHtmlElement(iframeDoc.documentElement)
@@ -81,6 +68,11 @@ export const IFrame: React.FC<AutoHeightIFrameProps> = ({
       setHeight(iframeDoc.documentElement.scrollHeight + scrollOffset)
     }
   }
+
+  const editor = useSlate()
+  useIsomorphicLayoutEffect(() => {
+    EDITOR_TO_WINDOW.set(editor, iframeRef.current?.contentWindow!)
+  }, [])
 
   // 自动高度逻辑
   useEffect(() => {
@@ -122,6 +114,19 @@ export const IFrame: React.FC<AutoHeightIFrameProps> = ({
     }
   }, [htmlElement, mountNode, height, observeRootElement, scrollOffset])
 
+  useEffect(() => {
+    if (mountNode && onRendered) {
+      onRendered()
+    }
+  }, [mountNode, onRendered])
+
+  const content = (
+    <>
+      <style>{styleContent}</style>
+      {children}
+    </>
+  )
+
   return (
     <iframe
       ref={iframeRef}
@@ -139,7 +144,7 @@ export const IFrame: React.FC<AutoHeightIFrameProps> = ({
       onLoad={handleLoad}
       title={props.title || 'Auto-height iframe'}
     >
-      {mountNode && createPortal(children, mountNode)}
+      {mountNode && createPortal(content, mountNode)}
     </iframe>
   )
 }

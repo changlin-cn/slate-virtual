@@ -1,5 +1,13 @@
 import React, { useCallback, useEffect, useRef, useMemo } from 'react'
-import { Range, Transforms, Node, Editor, BaseRange } from 'slate'
+import {
+  Range,
+  Transforms,
+  Node,
+  Editor,
+  BaseRange,
+  Path,
+  Selection,
+} from 'slate'
 // import { HistoryEditor } from 'slate-history'
 import getDirection from 'direction'
 
@@ -7,15 +15,16 @@ import { useSlate } from '../hooks/use-slate'
 
 import { log } from '../utils/log'
 import { isEventHandled } from '../utils/is-event-handled'
-import Hotkeys from '../utils/hotkeys'
+import { Hotkeys } from 'slate-dom'
 
 import { VirtualCaret } from './virtual-caret'
-import { EDITOR_TO_WINDOW } from '../utils/weak-maps'
 import { ReactEditor } from '../plugin/react-editor'
 
 export const VirtualInput: React.FC<{
   isEditorFocused: boolean
   onKeyDown?: React.KeyboardEventHandler<HTMLDivElement>
+  onBlur?: React.FocusEventHandler
+  onFocus?: React.FocusEventHandler
 }> = props => {
   const { isEditorFocused } = props
   const editor = useSlate()
@@ -28,7 +37,6 @@ export const VirtualInput: React.FC<{
     }),
     []
   )
-  const window = EDITOR_TO_WINDOW.get(editor)
 
   const handleChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -285,97 +293,74 @@ export const VirtualInput: React.FC<{
     [editor]
   )
 
-  useEffect(() => {
-    if (window) {
-      const mdfn = () => {
-        state.isMouseDown = true
-      }
-      const mufn = (event: MouseEvent) => {
-        state.isMouseDown = false
+  const handleBlur = (event: React.FocusEvent) => {
+    // console.log(event.relatedTarget,document.activeElement)
+    if (state.isMouseDown) {
+      return
+    }
+    props.onBlur?.(event)
+  }
 
-        const selection = window.getSelection()
-        const domRange = selection!.getRangeAt(0)
-        if (domRange) {
-          try {
-            const range = ReactEditor.toSlateRange(editor, domRange, {
-              exactMatch: true,
-              suppressThrow: true,
-            })
-            if (range) {
-              inputRef.current?.focus()
-            }
-          } catch (e) {
-            // do nothing
+  useEffect(() => {
+    const window = ReactEditor.getWindow(editor)
+    const mdfn = () => {
+      state.isMouseDown = true
+    }
+    const mufn = (event: MouseEvent) => {
+      state.isMouseDown = false
+
+      const selection = window.getSelection()
+      const domRange = selection!.getRangeAt(0)
+      if (domRange) {
+        try {
+          const range = ReactEditor.toSlateRange(editor, domRange, {
+            exactMatch: true,
+            suppressThrow: true,
+          })
+          // console.log('range',range)
+          if (range) {
+            inputRef.current?.focus()
           }
+        } catch (e) {
+          // do nothing
         }
       }
-      window.addEventListener('mousedown', mdfn, true)
-      window.addEventListener('mouseup', mufn, true)
-      return () => {
-        window.removeEventListener('mousedown', mdfn, true)
-        window.removeEventListener('mouseup', mufn, true)
-      }
     }
-  }, [window, editor])
+    window.addEventListener('mousedown', mdfn, true)
+    window.addEventListener('mouseup', mufn, true)
+    return () => {
+      window.removeEventListener('mousedown', mdfn, true)
+      window.removeEventListener('mouseup', mufn, true)
+    }
+  }, [editor])
 
   useEffect(() => {
     if (inputRef.current) {
+      if (!editor.selection && isEditorFocused) {
+        const p = Editor.start(editor, [])
+        Transforms.select(editor, p)
+        inputRef.current.focus()
+        return
+      }
+
       const collapsed =
         !!editor.selection && Range.isCollapsed(editor.selection)
       if (collapsed && isEditorFocused && !state.isMouseDown) {
-        inputRef.current.focus()
+        // inputRef.current.focus()
       }
     }
   }, [editor, editor.children, editor.selection, isEditorFocused])
-  useEffect(() => {
-    if (
-      window &&
-      editor.selection &&
-      !Range.isCollapsed(editor.selection) &&
-      inputRef.current &&
-      props.isEditorFocused
-    ) {
-      const kdfn = (event: KeyboardEvent) => {
-        if (inputRef.current && event.target !== inputRef.current) {
-          event.preventDefault()
-          inputRef.current.focus()
-
-          const { key, code, ctrlKey, shiftKey, metaKey, altKey, isComposing } =
-            event
-          const eventNew = new KeyboardEvent('keydown', {
-            key,
-            code,
-            ctrlKey,
-            shiftKey,
-            metaKey,
-            altKey,
-            isComposing,
-            bubbles: true,
-            cancelable: true,
-            view: window,
-          })
-          setTimeout(() => {
-            inputRef.current?.dispatchEvent(eventNew)
-          })
-        }
-      }
-
-      window.addEventListener('keydown', kdfn, true)
-
-      return () => {
-        window.removeEventListener('keydown', kdfn, true)
-      }
-    }
-  }, [editor, editor.selection, props.isEditorFocused])
 
   return (
-    <VirtualCaret twinkling selection={editor.selection}>
+    <VirtualCaret twinkling={isEditorFocused} selection={editor.selection}>
       <input
         ref={inputRef}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
         onCompositionStart={handleCompositionStart}
         onCompositionEnd={handleCompositionEnd}
+        onBlur={handleBlur}
+        onFocus={props.onFocus}
         style={{
           width: '5px',
           opacity: 0,

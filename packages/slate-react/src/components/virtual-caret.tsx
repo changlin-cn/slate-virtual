@@ -3,7 +3,6 @@ import { Range, Selection } from 'slate'
 
 import { ReactEditor } from '../plugin/react-editor'
 
-import { EDITOR_TO_WINDOW } from '../utils/weak-maps'
 import { useSlateStatic } from '../hooks/use-slate-static'
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect'
 
@@ -34,8 +33,8 @@ export const VirtualCaret = (props: {
   }, [twinkling, selection])
 
   useIsomorphicLayoutEffect(() => {
-    const window = EDITOR_TO_WINDOW.get(editor)
-    if (!selection || !window) {
+    const window = ReactEditor.getWindow(editor)
+    if (!selection) {
       return
     }
 
