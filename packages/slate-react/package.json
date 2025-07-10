@@ -1,5 +1,8 @@
 {
-  "name": "slate-react",
+  "name": "@hechanglin/slate-react",
+   "publishConfig": {        
+    "access": "public"
+  },
   "description": "Tools for building completely customizable richtext editors with React.",
   "version": "0.117.1",
   "license": "MIT",

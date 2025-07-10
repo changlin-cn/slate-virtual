@@ -1,9 +1,5 @@
-import {
-  NonEditable as Editable,
-  NonEditableProps,
-} from './components/non-editable'
-
-export { Editable, NonEditableProps }
+export { NonEditable, NonEditableProps } from './components/non-editable'
+export { Editable, EditableProps } from './components/editable'
 // Components
 export {
   RenderElementProps,

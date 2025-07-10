@@ -938,13 +938,13 @@ export const NonEditable = React.forwardRef<HTMLDivElement, NonEditableProps>(
 
     const [contentRendered, setContentRendered] = useState(false)
 
-    const handleBlur: React.FocusEventHandler = event => {
+    const handleBlur: React.FocusEventHandler = (event: any) => {
       setFocusedState(false)
       IS_FOCUSED.delete(editor)
       props.onBlur && props.onBlur(event)
     }
 
-    const handleFocus = event => {
+    const handleFocus = (event: any) => {
       if (!isFocused) {
         setFocusedState(true)
         IS_FOCUSED.set(editor, true)
